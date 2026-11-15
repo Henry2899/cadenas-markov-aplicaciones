@@ -3,5 +3,34 @@
 % ------------------------------------------------
 
 \begin{abstract}
-TODO: se escribe al final.
+El recocido simulado es una de las metaheurísticas más usadas para el
+problema del agente viajero (TSP) y, al mismo tiempo, una cadena de
+Markov cuyo comportamiento puede analizarse con rigor. En este trabajo
+se construye la cadena de Metropolis sobre el espacio de rutas con la
+vecindad 2-opt y se demuestra que es irreducible, aperiódica y
+reversible respecto de la distribución de Boltzmann. Se estudia además
+cómo la temperatura controla a la vez la concentración de esa
+distribución en las rutas óptimas y la velocidad de convergencia, medida
+por la brecha espectral. Con ello, el recocido aparece como una cadena
+no homogénea cuya convergencia caracteriza el teorema de Hajek. También
+se analiza una variante sobre la formulación QUBO del TSP y se demuestra
+que la penalización de las restricciones crea barreras de energía que
+crecen linealmente con el parámetro \(M\).
+
+Los experimentos, reproducibles en un notebook de Google Colab,
+confirman la teoría. Con cinco ciudades, las frecuencias empíricas
+convergen a la distribución exacta y la pendiente de \(-\ln\gamma(T)\)
+frente a \(1/T\) es \(68.2\), a un \(3\,\%\) de la profundidad crítica
+exacta \(h^\ast=66\). El recocido sobre rutas encuentra el óptimo en
+las \(40\) corridas sobre cuatro instancias de TSPLIB, hasta
+\texttt{berlin52}. En cambio, sobre el QUBO el desempeño depende de
+\(M\) en forma de U y, en \texttt{burma14}, no baja del \(29\,\%\) por
+encima del óptimo. La conclusión es que, para una misma cadena de
+Metropolis, la elección del espacio de estados determina la geometría
+del paisaje y, con ella, la eficacia del algoritmo.
+
+\medskip
+\noindent\textbf{Palabras clave:} cadenas de Markov, algoritmo de
+Metropolis, recocido simulado, brecha espectral, problema del agente
+viajero, QUBO.
 \end{abstract}

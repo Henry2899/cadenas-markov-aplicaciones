@@ -5,4 +5,64 @@
 \section{Conclusiones}
 \label{sec:conclusiones}
 
-TODO
+\begin{enumerate}
+    \item \textbf{La cadena de Metropolis sobre rutas está bien definida
+    y converge a la distribución de Boltzmann.} La vecindad 2-opt es
+    simétrica y conecta cualquier par de rutas en a lo sumo \(n-2\)
+    movimientos. Con la regla de Metropolis, la cadena es reversible
+    respecto de \(\pi_T\propto e^{-f/T}\), y los movimientos nulos de la
+    propuesta la hacen aperiódica incluso con \(n=5\), donde el grafo de
+    vecindad es bipartito. La simulación confirmó el teorema ergódico:
+    las frecuencias de visita reproducen \(\pi_T\) con una distancia de
+    variación total de \(0.0073\) tras \(200\,000\) pasos.
+
+    \item \textbf{La temperatura enfrenta precisión contra velocidad.}
+    Bajar \(T\) concentra \(\pi_T\) en las rutas óptimas, pero la brecha
+    espectral decae como \(e^{-h^\ast/T}\). En la instancia de cinco
+    ciudades, la pendiente medida, \(68.2\), coincide en un \(3\,\%\)
+    con la profundidad crítica exacta, \(h^\ast=66\). Entre
+    \(T=9.44\) y \(T=4.72\), la masa en el óptimo sube de \(0.70\) a
+    \(0.84\), pero el tiempo de relajación pasa de unos \(8\,000\) a
+    \(1.1\times10^7\) pasos. Cuando no hay mínimos espurios
+    (\(h^\ast=0\)), la brecha no se anula.
+
+    \item \textbf{El enfriamiento geométrico funciona en la práctica,
+    pero sin garantía.} El teorema de Hajek exige un enfriamiento
+    logarítmico con constante al menos \(h^\ast\), demasiado lento para
+    usarse. El esquema geométrico encontró el óptimo en las \(40\)
+    corridas sobre TSPLIB, hasta \texttt{berlin52}, pero en una de las
+    diez corridas con cinco ciudades quedó atrapado en el mínimo
+    espurio de profundidad \(66\), como permite la teoría.
+
+    \item \textbf{La representación del problema determina la dificultad
+    del paisaje.} En el QUBO, valores de \(M\) por debajo del umbral
+    \(M^\ast\) hacen que el mínimo sea infactible, y valores grandes
+    crean barreras de energía de al menos \(2M-2\cmax\) alrededor de cada
+    ruta. El resultado es un desempeño en forma de U: en \texttt{burma14}
+    el mejor resultado sobre el QUBO quedó a un \(29\,\%\) del óptimo,
+    mientras que el recocido sobre rutas lo encontró en todas las
+    corridas con menos pasos. La cadena es la misma; lo que cambia es el
+    espacio de estados y, con él, la geometría del paisaje.
+\end{enumerate}
+
+\paragraph{Limitaciones.} El análisis exacto de la cadena se limitó a
+\(n=5\), donde el espacio de estados se puede enumerar; para tamaños
+mayores, la profundidad crítica y la brecha espectral no son
+calculables directamente. Los experimentos con TSPLIB usan un solo
+esquema de enfriamiento y diez semillas por instancia, de modo que no
+permiten comparar esquemas ni estimar la probabilidad de fallo con
+precisión. La variante QUBO se probó con la vecindad más simple, el
+volteo de un bit.
+
+\paragraph{Trabajo futuro.} Tres extensiones naturales son:
+\begin{itemize}
+    \item comparar empíricamente el enfriamiento logarítmico con
+    \(c\ge h^\ast\) y el geométrico en instancias pequeñas, midiendo
+    \(\Prob(X_k\in\Sopt)\) a lo largo del tiempo;
+    \item diseñar vecindades para el QUBO que preserven la factibilidad,
+    como el intercambio de dos ciudades, y medir cuánto reducen la
+    barrera de penalización;
+    \item comparar el recocido simulado clásico sobre el QUBO con el
+    recocido cuántico, su análogo cuántico, que es la línea de
+    investigación en la que se enmarca este trabajo.
+\end{itemize}

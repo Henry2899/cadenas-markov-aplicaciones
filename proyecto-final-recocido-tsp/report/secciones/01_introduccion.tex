@@ -5,4 +5,61 @@
 \section{Introducción}
 \label{sec:introduccion}
 
-TODO
+El problema del agente viajero (TSP) consiste en encontrar el recorrido
+más corto que visita un conjunto de ciudades exactamente una vez y
+regresa al punto de partida. Su enunciado es elemental, pero el número
+de recorridos posibles crece factorialmente con el número de ciudades,
+y el problema es NP-difícil. Por eso, junto con los métodos exactos, se
+han desarrollado heurísticas que buscan soluciones de buena calidad en
+tiempos razonables. Una de las primeras y más sencillas es el
+movimiento 2-opt de \citet{croes1958}, que mejora una ruta invirtiendo
+uno de sus tramos.
+
+Una heurística de mejora local se detiene en el primer mínimo local que
+encuentra. El \emph{recocido simulado}, propuesto de forma
+independiente por \citet{kirkpatrick1983} y por \citet{cerny1985}, este
+último precisamente para el TSP, resuelve esa limitación con una idea
+tomada de la física estadística: aceptar a veces movimientos que
+empeoran el costo, con una probabilidad que disminuye a medida que baja
+un parámetro de \emph{temperatura}. La regla de aceptación es la del
+algoritmo de \citet{metropolis1953}, generalizada por
+\citet{hastings1970}, que fue diseñado para muestrear la distribución
+de Boltzmann de un sistema físico.
+
+Esta doble naturaleza es lo que hace del recocido simulado una
+aplicación natural de las cadenas de Markov. A temperatura fija, el
+algoritmo es una cadena de Markov homogénea sobre el espacio de rutas,
+y preguntas como \emph{¿a qué distribución converge?} o \emph{¿qué tan
+rápido lo hace?} se responden con las herramientas del curso:
+irreducibilidad, aperiodicidad, balance detallado y teoremas de
+convergencia. Al bajar la temperatura, el algoritmo se vuelve una
+cadena no homogénea, y la pregunta de si encuentra el óptimo tiene una
+respuesta precisa en el teorema de \citet{hajek1988}. La velocidad de
+convergencia a temperatura baja, por su parte, está gobernada por la
+brecha espectral, cuyo comportamiento asintótico describen
+\citet{holley1988} y \citet{holley1989}. Textos como los de
+\citet{levin2017} y \citet{bremaud2020} desarrollan este marco, y
+\citet{delahaye2019} revisan su uso en aplicaciones.
+
+El tema tiene además interés actual. Los recocedores cuánticos, una de
+las tecnologías de computación cuántica disponibles hoy, reciben los
+problemas en formato QUBO (optimización cuadrática binaria sin
+restricciones), en el que las restricciones se reemplazan por
+penalizaciones \citep{lucas2014,glover2022}. \citet{bochkarev2026}
+comparan varias tecnologías cuánticas en problemas clásicos de
+investigación de operaciones, entre ellos el TSP, y muestran que la
+formulación elegida afecta el desempeño de forma decisiva. El recocido
+simulado clásico sobre el QUBO es la referencia natural para esas
+comparaciones, y la teoría de cadenas de Markov permite entender por qué
+la penalización hace difícil el problema.
+
+Este trabajo estudia el recocido simulado aplicado al TSP desde la
+teoría de cadenas de Markov y contrasta cada resultado teórico con
+simulaciones. La sección~\ref{sec:problema} describe el problema y los
+objetivos. La sección~\ref{sec:marco} construye la cadena, demuestra
+sus propiedades, analiza el papel de la temperatura y la brecha
+espectral, enuncia el teorema de Hajek y formula la variante QUBO. La
+sección~\ref{sec:metodologia} describe la implementación, disponible en
+un notebook de Google Colab, y el diseño de los experimentos. La
+sección~\ref{sec:resultados} presenta y analiza los resultados, y la
+sección~\ref{sec:conclusiones} resume las conclusiones.

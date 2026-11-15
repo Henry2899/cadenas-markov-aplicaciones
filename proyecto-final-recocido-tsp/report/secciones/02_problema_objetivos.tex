@@ -5,4 +5,77 @@
 \section{Descripción del problema y objetivos}
 \label{sec:problema}
 
-TODO: el TSP, la explosión combinatoria y los objetivos.
+\subsection{El problema del agente viajero}
+\label{subsec:tsp}
+
+Se tienen \(n\) ciudades \(V=\{1,\ldots,n\}\) y un costo
+\(c_{ij}=c_{ji}\ge0\) de viajar entre cada par de ciudades distintas;
+en las instancias de este trabajo, \(c_{ij}\) es una distancia. El TSP
+simétrico consiste en encontrar una permutación cíclica de las ciudades,
+es decir, una \emph{ruta}, cuyo costo total
+\[
+f(\sigma)=\sum_{k=1}^{n}c_{\sigma_k\sigma_{k+1}},\qquad
+\sigma_{n+1}=\sigma_1,
+\]
+sea mínimo. Como el costo no depende de la ciudad de partida ni del
+sentido del recorrido, el número de rutas distintas es
+\((n-1)!/2\). La tabla~\ref{tab:explosion} muestra este número para los
+tamaños usados en este trabajo.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Instancia & \(n\) & rutas \((n-1)!/2\) \\
+\midrule
+aleatoria          &  5 & \(12\) \\
+aleatoria          &  8 & \(2\,520\) \\
+\texttt{burma14}   & 14 & \(3.1\times10^{9}\) \\
+\texttt{ulysses16} & 16 & \(6.5\times10^{11}\) \\
+\texttt{ulysses22} & 22 & \(2.6\times10^{19}\) \\
+\texttt{berlin52}  & 52 & \(7.8\times10^{65}\) \\
+\bottomrule
+\end{tabular}
+\caption{Número de rutas distintas según el número de ciudades.}
+\label{tab:explosion}
+\end{table}
+
+Con \(n=5\) es posible enumerar todas las rutas, y por eso esa instancia
+se usa para calcular la cadena de Markov de forma exacta. Ya con
+\(n=22\), en cambio, evaluar una ruta por nanosegundo tomaría más de
+ochocientos años, y con \(n=52\) el número de rutas supera con creces
+el número estimado de átomos en la Tierra. La exploración exhaustiva es
+inviable, y aquí entran los métodos aleatorizados: el recocido simulado
+no recorre el espacio de rutas, sino que lo muestrea mediante una
+cadena de Markov diseñada para concentrarse en las rutas de bajo costo.
+
+\subsection{Objetivos}
+\label{subsec:objetivos}
+
+\subsubsection*{Objetivo general}
+
+Estudiar el recocido simulado aplicado al problema del agente viajero
+como una cadena de Markov, demostrando sus propiedades fundamentales y
+contrastándolas con simulaciones reproducibles.
+
+\subsubsection*{Objetivos específicos}
+
+\begin{itemize}
+    \item Construir la cadena de Metropolis sobre el espacio de rutas con
+    la vecindad 2-opt y demostrar que es irreducible, aperiódica y
+    reversible respecto de la distribución de Boltzmann.
+    \item Analizar el efecto de la temperatura sobre la distribución
+    estacionaria y sobre la velocidad de convergencia, medida por la
+    brecha espectral, y relacionar esta última con la profundidad
+    crítica del paisaje de costos.
+    \item Presentar el recocido simulado como una cadena de Markov no
+    homogénea y discutir, con el teorema de Hajek, las diferencias entre
+    el enfriamiento logarítmico y el geométrico.
+    \item Formular la variante del recocido sobre el modelo QUBO del TSP
+    y explicar, a partir de la geometría del paisaje de energía, cómo
+    influye el parámetro de penalización \(M\).
+    \item Implementar la cadena exacta para \(n=5\) y el recocido
+    simulado en un notebook reproducible, y verificar con él los
+    resultados teóricos en instancias aleatorias y de TSPLIB.
+\end{itemize}
