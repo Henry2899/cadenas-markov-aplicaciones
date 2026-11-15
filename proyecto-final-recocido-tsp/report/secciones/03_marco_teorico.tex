@@ -181,17 +181,26 @@ comparten vértices, luego son no adyacentes en \(y\), y retirarlas y
 reconectar devuelve \(x\).
 \end{proof}
 
-La proposición~\ref{prop:vecindad} permite definir una \emph{matriz de
-propuesta} uniforme y simétrica:
+La propuesta que se implementa elige un par de posiciones \(\{i,j\}\)
+uniformemente entre los \(\binom n2\) posibles y aplica el movimiento
+2-opt que retira las aristas que salen de las posiciones \(i\) y \(j\).
+Los \(n\) pares que corresponden a aristas adyacentes no cambian la ruta
+(\emph{movimientos nulos}), y por la proposición~\ref{prop:vecindad}
+cada uno de los \(n(n-3)/2\) pares restantes produce un vecino distinto.
+La \emph{matriz de propuesta} es entonces
 \begin{equation}
 \label{eq:propuesta}
 R(x,y)=
 \begin{cases}
-\dfrac{2}{n(n-3)}, & y\in N(x),\\[1ex]
+\dfrac{2}{n(n-1)}, & y\in N(x),\\[1.5ex]
+\dfrac{2}{n-1}, & y=x,\\[1ex]
 0, & \text{en otro caso},
 \end{cases}
 \qquad R(x,y)=R(y,x).
 \end{equation}
+Es simétrica por la proposición~\ref{prop:vecindad}(b), y la
+probabilidad positiva de quedarse quieto tendrá un papel en la
+aperiodicidad y en el espectro.
 
 % ------------------------------------------------
 \subsection{Irreducibilidad de la vecindad 2-opt}
@@ -229,14 +238,14 @@ de probabilidad positiva bajo \(R\), luego \(R^t(x,y)>0\) para algún
 \(t\le n-2\).
 \end{proof}
 
-\begin{observacion}[La propuesta por sí sola puede ser periódica]
+\begin{observacion}[El papel de los movimientos nulos]
 \label{obs:bipartito}
 La irreducibilidad no garantiza aperiodicidad. Se comprobó de manera
 computacional que, para \(n=5\), el grafo de vecindad 2-opt sobre las
-\(12\) rutas es bipartito, así que la cadena con matriz \(R\) tiene
-período \(2\). Para \(n=4,6,7\), el grafo no es bipartito. En la cadena
-de Metropolis la aperiodicidad no proviene de \(R\), sino de los
-rechazos (proposición~\ref{prop:aperiodica}).
+\(12\) rutas es bipartito; para \(n=4,6,7\) no lo es. Por lo tanto, una
+propuesta uniforme sobre \(N(x)\), sin movimientos nulos, daría para
+\(n=5\) una cadena de período \(2\). En la propuesta
+\eqref{eq:propuesta} esto no ocurre, porque \(R(x,x)>0\).
 \end{observacion}
 
 % ------------------------------------------------
@@ -265,8 +274,9 @@ R(x,y)\,A_T(x,y), & y\ne x,\\[0.5ex]
 1-\displaystyle\sum_{z\ne x}R(x,z)\,A_T(x,z), & y=x.
 \end{cases}
 \end{equation}
-Es decir, en cada paso se propone \(y\in N(x)\) uniformemente al azar;
-con probabilidad \(A_T(x,y)\) la cadena se mueve a \(y\) y, en caso
+Es decir, en cada paso se propone un movimiento con la matriz \(R\); si
+es nulo, la cadena permanece en \(x\), y si propone \(y\in N(x)\), la
+cadena se mueve a \(y\) con probabilidad \(A_T(x,y)\) y, en caso
 contrario, permanece en \(x\).
 \end{definicion}
 
@@ -309,29 +319,35 @@ cocientes \(\pi_T(y)/\pi_T(x)=e^{-(f(y)-f(x))/T}\), en los que \(Z_T\)
 se cancela; esta es la razón por la cual el método es aplicable cuando
 \(|S_n|\) es astronómico.
 
-\begin{proposicion}[Aperiodicidad]
+\begin{proposicion}[Irreducibilidad y aperiodicidad]
 \label{prop:aperiodica}
-Si \(f\) no es constante sobre \(S_n\), entonces \(P_T\) es irreducible
-y aperiódica para todo \(T>0\).
+Para todo \(T>0\), la cadena \(P_T\) es irreducible y aperiódica.
+Además, \(P_T(x,x)\ge \delta\) para todo \(x\), con
+\(\delta=2/(n-1)\).
 \end{proposicion}
 
 \begin{proof}
 Para \(y\in N(x)\) se tiene \(P_T(x,y)=R(x,y)A_T(x,y)>0\), pues
 \(A_T>0\). Así, todo camino de movimientos 2-opt tiene probabilidad
 positiva bajo \(P_T\), y la irreducibilidad se sigue de la
-proposición~\ref{prop:irreducible}. Para la aperiodicidad, como \(f\)
-no es constante y el grafo de vecindad es conexo, existe una arista
-\(\{x,y\}\) del grafo con \(f(y)>f(x)\). Entonces
-\[
-P_T(x,x)\ge R(x,y)\bigl(1-A_T(x,y)\bigr)
-=R(x,y)\bigl(1-e^{-(f(y)-f(x))/T}\bigr)>0,
-\]
-y un estado con lazo basta para una cadena irreducible.
+proposición~\ref{prop:irreducible}. Para la aperiodicidad, por
+\eqref{eq:metropolis} se tiene \(P_T(x,x)\ge R(x,x)=2/(n-1)>0\), y un
+estado con lazo basta para una cadena irreducible.
 \end{proof}
+
+\begin{observacion}
+\label{obs:rechazos}
+Aun sin movimientos nulos, la cadena de Metropolis sería aperiódica
+siempre que \(f\) no sea constante: como el grafo de vecindad es conexo,
+existe una arista \(\{x,y\}\) con \(f(y)>f(x)\), y entonces
+\(P_T(x,x)\ge R(x,y)\bigl(1-e^{-(f(y)-f(x))/T}\bigr)>0\). Este es el
+mecanismo que opera en la variante QUBO de la
+sección~\ref{subsec:qubo}.
+\end{observacion}
 
 \begin{corolario}
 \label{cor:metropolis}
-Si \(f\) no es constante, para todo \(T>0\) la cadena \(P_T\) tiene a
+Para todo \(T>0\), la cadena \(P_T\) tiene a
 \(\pi_T\) como única distribución estacionaria,
 \(P_T^t(x,\cdot)\to\pi_T\) para toda \(x\), y las frecuencias empíricas
 de visita convergen casi seguramente a \(\pi_T\).
@@ -416,6 +432,22 @@ La \emph{brecha espectral} de \(P_T\) es
 \(\lambda_\ast=\max\{|\lambda_2|,|\lambda_N|\}\). El \emph{tiempo de
 relajación} es \(t_{\mathrm{rel}}=1/\gamma_\ast\).
 \end{definicion}
+
+\begin{proposicion}[Espectro no muy negativo]
+\label{prop:espectro_lazy}
+Todo valor propio de \(P_T\) cumple \(\lambda\ge 2\delta-1\), con
+\(\delta=2/(n-1)\). En particular, para \(n=5\) todos los valores propios
+son no negativos y \(\gamma_\ast(T)=\gamma(T)\).
+\end{proposicion}
+
+\begin{proof}
+Por la proposición~\ref{prop:aperiodica}, la matriz
+\(P'=(P_T-\delta I)/(1-\delta)\) tiene entradas no negativas y filas que
+suman \(1\), luego es estocástica y sus valores propios tienen módulo
+a lo sumo \(1\). Como \(P_T=\delta I+(1-\delta)P'\), cada valor propio de
+\(P_T\) es de la forma \(\delta+(1-\delta)\mu\) con \(\mu\ge-1\), y por
+lo tanto es al menos \(2\delta-1\). Para \(n=5\), \(\delta=1/2\).
+\end{proof}
 
 \begin{proposicion}[Cota espectral]
 \label{prop:cota_espectral}
@@ -627,7 +659,8 @@ las rutas óptimas.
 La condición \(M>f^\ast\) es suficiente, no necesaria: el umbral exacto
 \(M^\ast\) a partir del cual se preserva la equivalencia puede ser
 menor. Como \(f^\ast\) es desconocido, en la práctica se usa una cota
-superior, como el costo de cualquier ruta conocida. Elegir \(M\)
+superior, como el costo de cualquier ruta conocida; en este trabajo se
+toma \(M=U+1\), con \(U\) el costo de la ruta del vecino más cercano. Elegir \(M\)
 demasiado pequeño hace que el mínimo de \(E_M\) sea infactible; la
 proposición siguiente muestra que elegirlo demasiado grande también
 tiene un costo, esta vez para la cadena.
