@@ -1,0 +1,126 @@
+\begin{thebibliography}{16}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Bertsimas and Tsitsiklis(1993)]{bertsimas1993}
+Dimitris Bertsimas and John Tsitsiklis.
+\newblock Simulated annealing.
+\newblock \emph{Statistical Science}, 8\penalty0 (1):\penalty0 10--15, 1993.
+\newblock \doi{10.1214/ss/1177011077}.
+
+\bibitem[Bochkarev et~al.(2026)Bochkarev, Heese, J{\"a}ger, Schiewe, and
+  Sch{\"o}bel]{bochkarev2026}
+Alexey Bochkarev, Raoul Heese, Sven J{\"a}ger, Philine Schiewe, and Anita
+  Sch{\"o}bel.
+\newblock Quantum computing for discrete optimization: A highlight of three
+  technologies.
+\newblock \emph{European Journal of Operational Research}, 329:\penalty0
+  747--766, 2026.
+\newblock \doi{10.1016/j.ejor.2025.07.063}.
+
+\bibitem[Br{\'e}maud(2020)]{bremaud2020}
+Pierre Br{\'e}maud.
+\newblock \emph{Markov Chains: Gibbs Fields, Monte Carlo Simulation and
+  Queues}, volume~31 of \emph{Texts in Applied Mathematics}.
+\newblock Springer, Cham, 2 edition, 2020.
+\newblock \doi{10.1007/978-3-030-45982-6}.
+
+\bibitem[{\v{C}}ern{\'y}(1985)]{cerny1985}
+Vladim{\'i}r {\v{C}}ern{\'y}.
+\newblock Thermodynamical approach to the traveling salesman problem: An
+  efficient simulation algorithm.
+\newblock \emph{Journal of Optimization Theory and Applications}, 45\penalty0
+  (1):\penalty0 41--51, 1985.
+\newblock \doi{10.1007/BF00940812}.
+
+\bibitem[Croes(1958)]{croes1958}
+G.~A. Croes.
+\newblock A method for solving traveling-salesman problems.
+\newblock \emph{Operations Research}, 6\penalty0 (6):\penalty0 791--812, 1958.
+\newblock \doi{10.1287/opre.6.6.791}.
+
+\bibitem[Delahaye et~al.(2019)Delahaye, Chaimatanan, and Mongeau]{delahaye2019}
+Daniel Delahaye, Supatcha Chaimatanan, and Marcel Mongeau.
+\newblock Simulated annealing: From basics to applications.
+\newblock In Michel Gendreau and Jean-Yves Potvin, editors, \emph{Handbook of
+  Metaheuristics}, volume 272 of \emph{International Series in Operations
+  Research \& Management Science}, pages 1--35. Springer, Cham, 3 edition,
+  2019.
+\newblock \doi{10.1007/978-3-319-91086-4_1}.
+
+\bibitem[Glover et~al.(2022)Glover, Kochenberger, Hennig, and Du]{glover2022}
+Fred Glover, Gary Kochenberger, Rick Hennig, and Yu~Du.
+\newblock Quantum bridge analytics {I}: A tutorial on formulating and using
+  {QUBO} models.
+\newblock \emph{Annals of Operations Research}, 314\penalty0 (1):\penalty0
+  141--183, 2022.
+
+\bibitem[Hajek(1988)]{hajek1988}
+Bruce Hajek.
+\newblock Cooling schedules for optimal annealing.
+\newblock \emph{Mathematics of Operations Research}, 13\penalty0 (2):\penalty0
+  311--329, 1988.
+\newblock \doi{10.1287/moor.13.2.311}.
+
+\bibitem[Hastings(1970)]{hastings1970}
+W.~Keith Hastings.
+\newblock Monte {C}arlo sampling methods using {M}arkov chains and their
+  applications.
+\newblock \emph{Biometrika}, 57\penalty0 (1):\penalty0 97--109, 1970.
+\newblock \doi{10.1093/biomet/57.1.97}.
+
+\bibitem[Holley and Stroock(1988)]{holley1988}
+Richard Holley and Daniel Stroock.
+\newblock Simulated annealing via {S}obolev inequalities.
+\newblock \emph{Communications in Mathematical Physics}, 115\penalty0
+  (4):\penalty0 553--569, 1988.
+\newblock \doi{10.1007/BF01224127}.
+
+\bibitem[Holley et~al.(1989)Holley, Kusuoka, and Stroock]{holley1989}
+Richard~A. Holley, Shigeo Kusuoka, and Daniel~W. Stroock.
+\newblock Asymptotics of the spectral gap with applications to the theory of
+  simulated annealing.
+\newblock \emph{Journal of Functional Analysis}, 83\penalty0 (2):\penalty0
+  333--347, 1989.
+\newblock \doi{10.1016/0022-1236(89)90023-2}.
+
+\bibitem[Ingrassia(1994)]{ingrassia1994}
+Salvatore Ingrassia.
+\newblock On the rate of convergence of the {M}etropolis algorithm and {G}ibbs
+  sampler by geometric bounds.
+\newblock \emph{The Annals of Applied Probability}, 4\penalty0 (2):\penalty0
+  347--389, 1994.
+\newblock \doi{10.1214/aoap/1177005064}.
+
+\bibitem[Kirkpatrick et~al.(1983)Kirkpatrick, Gelatt, and
+  Vecchi]{kirkpatrick1983}
+Scott Kirkpatrick, C.~Daniel Gelatt, and Mario~P. Vecchi.
+\newblock Optimization by simulated annealing.
+\newblock \emph{Science}, 220\penalty0 (4598):\penalty0 671--680, 1983.
+\newblock \doi{10.1126/science.220.4598.671}.
+
+\bibitem[Levin and Peres(2017)]{levin2017}
+David~A. Levin and Yuval Peres.
+\newblock \emph{Markov Chains and Mixing Times}.
+\newblock American Mathematical Society, Providence, RI, 2 edition, 2017.
+\newblock ISBN 978-1-4704-2962-1.
+
+\bibitem[Lucas(2014)]{lucas2014}
+Andrew Lucas.
+\newblock Ising formulations of many {NP} problems.
+\newblock \emph{Frontiers in Physics}, 2:\penalty0 5, 2014.
+\newblock \doi{10.3389/fphy.2014.00005}.
+
+\bibitem[Metropolis et~al.(1953)Metropolis, Rosenbluth, Rosenbluth, Teller, and
+  Teller]{metropolis1953}
+Nicholas Metropolis, Arianna~W. Rosenbluth, Marshall~N. Rosenbluth, Augusta~H.
+  Teller, and Edward Teller.
+\newblock Equation of state calculations by fast computing machines.
+\newblock \emph{The Journal of Chemical Physics}, 21\penalty0 (6):\penalty0
+  1087--1092, 1953.
+\newblock \doi{10.1063/1.1699114}.
+
+\end{thebibliography}

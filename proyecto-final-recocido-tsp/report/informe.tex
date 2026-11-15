@@ -1,0 +1,157 @@
+\documentclass[12pt,a4paper]{article}
+
+% ------------------------------------------------
+% PAQUETES
+% ------------------------------------------------
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-nodecimaldot]{babel}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{mathtools}
+
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\usepackage[round,authoryear]{natbib}
+\usepackage{hyperref}
+
+\usepackage{geometry}
+\geometry{
+    top=2.5cm,
+    bottom=2.5cm,
+    left=2.8cm,
+    right=2.8cm
+}
+
+\usepackage{setspace}
+\onehalfspacing
+
+\usepackage{parskip}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Recocido simulado y el TSP}
+\lhead{Cadenas de Markov}
+\cfoot{\thepage}
+
+\graphicspath{{../results/}}
+
+% ------------------------------------------------
+% ENTORNOS
+% ------------------------------------------------
+
+\theoremstyle{definition}
+\newtheorem{definicion}{Definición}[section]
+\newtheorem{ejemplo}[definicion]{Ejemplo}
+\newtheorem{observacion}[definicion]{Observación}
+
+\theoremstyle{plain}
+\newtheorem{teorema}[definicion]{Teorema}
+\newtheorem{proposicion}[definicion]{Proposición}
+\newtheorem{lema}[definicion]{Lema}
+\newtheorem{corolario}[definicion]{Corolario}
+
+\renewcommand{\proofname}{Demostración}
+
+% ------------------------------------------------
+% NOTACIÓN
+% ------------------------------------------------
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\operatorname{Var}}
+\newcommand{\TV}{\mathrm{TV}}
+\newcommand{\Sopt}{S^{\ast}}
+\newcommand{\cmax}{c_{\max}}
+
+% ------------------------------------------------
+% INFORMACIÓN DEL DOCUMENTO
+% ------------------------------------------------
+
+\title{
+    \textbf{El recocido simulado como cadena de Markov: una aplicación al problema del agente viajero}
+}
+
+\author{
+    Henry Giovani Barrera Martínez
+    Laura Victoria Torres Pinilla
+}
+
+\date{\today}
+
+% ------------------------------------------------
+% DOCUMENTO
+% ------------------------------------------------
+
+\begin{document}
+
+\begin{titlepage}
+
+    \centering
+
+    \vspace*{2cm}
+
+    {\Large \textbf{Universidad Nacional de Colombia}\par}
+
+    \vspace{0.5cm}
+
+    {\large Departamento de Matemáticas\par}
+
+    \vspace{2cm}
+
+    {\LARGE
+    \textbf{El recocido simulado como cadena de Markov: una aplicación al problema del agente viajero}
+    \par}
+
+    \vspace{1.5cm}
+
+    {\large Asignatura: Cadenas de Markov\par}
+
+    {\large Proyecto final\par}
+
+    \vspace{2cm}
+
+    {\large
+    \textbf{Estudiantes:}\\
+        Henry Giovani Barrera Martínez\\
+        Laura Victoria Torres Pinilla\\
+        TODO: tercer integrante
+    \par}
+
+    \vfill
+
+    {\large Bogotá D.C., Colombia\par}
+
+    {\large \today\par}
+
+\end{titlepage}
+
+\input{secciones/00_resumen}
+
+\tableofcontents
+
+\newpage
+
+\input{secciones/01_introduccion}
+\input{secciones/02_problema_objetivos}
+\input{secciones/03_marco_teorico}
+\input{secciones/04_metodologia}
+\input{secciones/05_resultados}
+\input{secciones/06_conclusiones}
+
+\bibliographystyle{plainnat}
+\bibliography{referencias}
+
+\end{document}

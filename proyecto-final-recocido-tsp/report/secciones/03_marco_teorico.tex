@@ -1,0 +1,700 @@
+% ------------------------------------------------
+% 3. MARCO TEÓRICO Y FORMULACIÓN MATEMÁTICA DEL MODELO
+% ------------------------------------------------
+
+\section{Marco teórico y formulación matemática del modelo}
+\label{sec:marco}
+
+Esta sección construye la cadena de Markov que subyace al recocido
+simulado aplicado al problema del agente viajero (TSP). Primero se
+recuerdan los resultados de cadenas de Markov finitas que se usarán
+(\S\ref{subsec:preliminares}). Luego se definen el espacio de estados y
+la vecindad 2-opt (\S\ref{subsec:estados}), se demuestra la
+irreducibilidad de la vecindad (\S\ref{subsec:irreducibilidad}) y se
+construye la cadena de Metropolis a temperatura fija, cuya distribución
+estacionaria es la de Boltzmann (\S\ref{subsec:metropolis}). Después se
+estudian el papel de la temperatura (\S\ref{subsec:temperatura}) y la
+velocidad de convergencia a través de la brecha espectral
+(\S\ref{subsec:brecha}). Con esto, el recocido simulado aparece como
+una cadena no homogénea cuya convergencia caracteriza el teorema de
+\citet{hajek1988} (\S\ref{subsec:recocido}). Finalmente se formula la
+variante sobre el modelo QUBO y se muestra por qué su paisaje de
+energía es más difícil de recorrer (\S\ref{subsec:qubo}).
+
+% ------------------------------------------------
+\subsection{Preliminares: cadenas de Markov finitas}
+\label{subsec:preliminares}
+
+Sea \(S\) un conjunto finito y \(P=(P(x,y))_{x,y\in S}\) una matriz
+estocástica, es decir, \(P(x,y)\ge 0\) y \(\sum_{y\in S}P(x,y)=1\) para
+todo \(x\in S\). Una sucesión de variables aleatorias
+\((X_t)_{t\ge 0}\) con valores en \(S\) es una \emph{cadena de Markov
+homogénea} con matriz de transición \(P\) si
+\[
+\Prob(X_{t+1}=y \mid X_t=x,\, X_{t-1}=x_{t-1},\ldots,X_0=x_0)
+=P(x,y)
+\]
+para todo \(t\ge 0\) y toda historia con probabilidad positiva. Se
+escribe \(P^t(x,y)=\Prob(X_t=y\mid X_0=x)\).
+
+\begin{definicion}[Irreducibilidad, período y reversibilidad]
+\label{def:propiedades}
+Sea \(P\) una matriz estocástica sobre \(S\) finito.
+\begin{enumerate}[label=(\roman*)]
+    \item \(P\) es \emph{irreducible} si para todo \(x,y\in S\) existe
+    \(t\ge 1\) con \(P^t(x,y)>0\).
+    \item El \emph{período} de \(x\) es
+    \(d(x)=\gcd\{t\ge 1: P^t(x,x)>0\}\). Si \(P\) es irreducible,
+    todos los estados tienen el mismo período, y \(P\) es
+    \emph{aperiódica} cuando ese período es \(1\).
+    \item Una distribución \(\pi\) sobre \(S\) es \emph{estacionaria}
+    si \(\pi P=\pi\).
+    \item \(P\) es \emph{reversible} respecto de \(\pi\) si satisface
+    las \emph{ecuaciones de balance detallado}
+    \begin{equation}
+    \label{eq:balance}
+    \pi(x)P(x,y)=\pi(y)P(y,x)\qquad\text{para todo } x,y\in S.
+    \end{equation}
+\end{enumerate}
+\end{definicion}
+
+Si \(P\) es irreducible, basta que un estado \(x\) tenga
+\(P(x,x)>0\) para que la cadena sea aperiódica, pues entonces
+\(1\in\{t: P^t(x,x)>0\}\). Además, sumando \eqref{eq:balance} sobre
+\(x\) se obtiene \(\sum_x\pi(x)P(x,y)=\pi(y)\), es decir, \emph{toda
+distribución que satisface el balance detallado es estacionaria}.
+
+Los tres resultados siguientes son clásicos y se usan sin
+demostración; pueden consultarse en
+\citet[caps.~1 y~4]{levin2017} y en \citet[caps.~3 y~4]{bremaud2020}.
+
+\begin{teorema}[Existencia y unicidad]
+\label{teo:unicidad}
+Si \(P\) es irreducible sobre \(S\) finito, existe una única
+distribución estacionaria \(\pi\), y \(\pi(x)>0\) para todo
+\(x\in S\).
+\end{teorema}
+
+\begin{teorema}[Convergencia]
+\label{teo:convergencia}
+Si \(P\) es irreducible y aperiódica sobre \(S\) finito, con
+distribución estacionaria \(\pi\), entonces existen constantes
+\(C>0\) y \(\alpha\in(0,1)\) tales que
+\[
+\max_{x\in S}\,\bigl\|P^t(x,\cdot)-\pi\bigr\|_{\TV}\le C\alpha^t
+\qquad\text{para todo } t\ge 0,
+\]
+donde
+\(\|\mu-\nu\|_{\TV}=\tfrac12\sum_{y\in S}|\mu(y)-\nu(y)|\).
+\end{teorema}
+
+\begin{teorema}[Teorema ergódico]
+\label{teo:ergodico}
+Si \(P\) es irreducible sobre \(S\) finito, con distribución
+estacionaria \(\pi\), entonces para toda función \(g:S\to\R\) y toda
+distribución inicial,
+\[
+\frac1t\sum_{s=0}^{t-1}g(X_s)\xrightarrow[t\to\infty]{\text{c.s.}}
+\sum_{x\in S}g(x)\pi(x).
+\]
+En particular, tomando \(g=\mathbf 1_{\{y\}}\), la fracción de tiempo
+que la cadena pasa en \(y\) converge casi seguramente a \(\pi(y)\).
+\end{teorema}
+
+El teorema~\ref{teo:ergodico} es la base del primer experimento de la
+sección~\ref{sec:resultados}: las frecuencias empíricas de visita de
+una trayectoria larga se comparan con la distribución estacionaria
+calculada de forma exacta.
+
+% ------------------------------------------------
+\subsection{Espacio de estados y vecindad 2-opt}
+\label{subsec:estados}
+
+Sea \(V=\{1,\ldots,n\}\) un conjunto de \(n\ge 4\) ciudades con costos
+simétricos \(c_{ij}=c_{ji}\ge 0\) para \(i\ne j\), y sea
+\(\cmax=\max_{i\ne j}c_{ij}\). Una \emph{ruta} es un ciclo
+hamiltoniano del grafo completo \(K_n\), es decir, un conjunto
+\(x\) de \(n\) aristas que visita cada ciudad exactamente una vez. Su
+costo es
+\[
+f(x)=\sum_{\{i,j\}\in x}c_{ij}.
+\]
+El espacio de estados de la cadena es el conjunto \(S_n\) de todas las
+rutas. Como los costos son simétricos, una ruta no depende del punto de
+partida ni del sentido de recorrido, de modo que
+\begin{equation}
+\label{eq:num_rutas}
+|S_n|=\frac{(n-1)!}{2}.
+\end{equation}
+Para \(n=5\) se tiene \(|S_5|=12\), lo que permite calcular la cadena de
+forma exacta. Para \(n=52\) (la instancia \texttt{berlin52} de TSPLIB),
+\(|S_{52}|\approx 7.8\times10^{65}\). Denotamos por
+\(f^\ast=\min_{x\in S_n}f(x)\) el costo óptimo y por
+\(\Sopt=\{x\in S_n:f(x)=f^\ast\}\) el conjunto de rutas óptimas.
+
+Es útil representar una ruta como una sucesión
+\((\sigma_1,\sigma_2,\ldots,\sigma_n)\) con \(\sigma_1=1\), entendida de
+forma cíclica (\(\sigma_{n+1}=\sigma_1\)). Cada ruta admite exactamente
+dos representaciones de este tipo, una por cada sentido de recorrido.
+
+\begin{definicion}[Movimiento 2-opt]
+\label{def:2opt}
+Sea \(x\in S_n\). Un \emph{movimiento 2-opt} retira de \(x\) dos aristas
+no adyacentes \(\{a,b\}\) y \(\{c,d\}\), donde \(a,b,c,d\) aparecen en
+ese orden a lo largo de la ruta, y las reemplaza por \(\{a,c\}\) y
+\(\{b,d\}\) \citep{croes1958}. En la representación como sucesión, esto
+equivale a invertir el segmento comprendido entre \(b\) y \(c\):
+\[
+(\ldots,a,\underbrace{b,\ldots,c}_{\text{se invierte}},d,\ldots)
+\;\longmapsto\;
+(\ldots,a,c,\ldots,b,d,\ldots).
+\]
+La \emph{vecindad} \(N(x)\) es el conjunto de rutas que se obtienen de
+\(x\) mediante un movimiento 2-opt.
+\end{definicion}
+
+La otra forma de reconectar, \(\{a,d\}\) y \(\{b,c\}\), divide la ruta en
+dos subciclos, de modo que la reconexión del movimiento 2-opt es la
+única que produce otra ruta.
+
+\begin{proposicion}[Estructura de la vecindad]
+\label{prop:vecindad}
+Para \(n\ge 4\) y toda \(x\in S_n\):
+\begin{enumerate}[label=(\alph*)]
+    \item \(|N(x)|=\dfrac{n(n-3)}{2}\);
+    \item \(y\in N(x)\) si y solo si \(x\in N(y)\).
+\end{enumerate}
+\end{proposicion}
+
+\begin{proof}
+(a) Una arista de un ciclo de \(n\) aristas es adyacente a exactamente
+dos aristas. Por lo tanto, cada arista forma par no adyacente con
+\(n-3\) aristas, y el número de pares no adyacentes es \(n(n-3)/2\).
+Cada par da una ruta \(y\ne x\), porque \(y\) contiene las aristas
+\(\{a,c\}\) y \(\{b,d\}\), que no están en \(x\). Además, pares distintos
+dan rutas distintas, porque el par retirado se recupera como
+\(x\setminus y\).
+
+(b) Si \(y\) se obtiene de \(x\) retirando \(\{a,b\},\{c,d\}\) y
+agregando \(\{a,c\},\{b,d\}\), entonces estas dos últimas aristas no
+comparten vértices, luego son no adyacentes en \(y\), y retirarlas y
+reconectar devuelve \(x\).
+\end{proof}
+
+La proposición~\ref{prop:vecindad} permite definir una \emph{matriz de
+propuesta} uniforme y simétrica:
+\begin{equation}
+\label{eq:propuesta}
+R(x,y)=
+\begin{cases}
+\dfrac{2}{n(n-3)}, & y\in N(x),\\[1ex]
+0, & \text{en otro caso},
+\end{cases}
+\qquad R(x,y)=R(y,x).
+\end{equation}
+
+% ------------------------------------------------
+\subsection{Irreducibilidad de la vecindad 2-opt}
+\label{subsec:irreducibilidad}
+
+\begin{proposicion}
+\label{prop:irreducible}
+Para \(n\ge 4\), la matriz de propuesta \(R\) es irreducible. Más aún,
+desde cualquier ruta se llega a cualquier otra con a lo sumo \(n-2\)
+movimientos 2-opt.
+\end{proposicion}
+
+\begin{proof}
+Representemos las rutas como sucesiones con \(\sigma_1=1\). Para
+\(2\le i<j\le n\), sea \(\rho_{ij}\) la inversión del segmento
+\((\sigma_i,\ldots,\sigma_j)\). Esta inversión retira las aristas
+\(\{\sigma_{i-1},\sigma_i\}\) y \(\{\sigma_j,\sigma_{j+1}\}\) y agrega
+\(\{\sigma_{i-1},\sigma_j\}\) y \(\{\sigma_i,\sigma_{j+1}\}\). Las aristas
+retiradas son no adyacentes salvo cuando \(\sigma_{i-1}=\sigma_{j+1}\),
+lo que ocurre solo si \((i,j)=(2,n)\). En ese caso la inversión deja el
+segmento \((\sigma_2,\ldots,\sigma_n)\) al revés, es decir, produce la
+misma ruta recorrida en sentido contrario. Así, toda inversión
+\(\rho_{ij}\) con \((i,j)\ne(2,n)\) es un movimiento 2-opt.
+
+Sean \(x,y\in S_n\) con representaciones
+\((1,\sigma_2,\ldots,\sigma_n)\) y \((1,\tau_2,\ldots,\tau_n)\). Para
+\(k=2,\ldots,n-1\), si \(\sigma_k\ne\tau_k\), sea \(j>k\) la posición
+actual de \(\tau_k\) y aplíquese \(\rho_{kj}\), que lleva \(\tau_k\) a
+la posición \(k\) sin alterar las posiciones \(2,\ldots,k-1\). Si
+\((k,j)=(2,n)\), la inversión solo cambia el sentido de recorrido y no
+la ruta, así que el paso no cuenta como movimiento. Después de procesar
+\(k=n-1\), la posición \(n\) queda determinada, y la sucesión obtenida
+es la de \(y\). Se usaron a lo sumo \(n-2\) movimientos 2-opt, cada uno
+de probabilidad positiva bajo \(R\), luego \(R^t(x,y)>0\) para algún
+\(t\le n-2\).
+\end{proof}
+
+\begin{observacion}[La propuesta por sí sola puede ser periódica]
+\label{obs:bipartito}
+La irreducibilidad no garantiza aperiodicidad. Se comprobó de manera
+computacional que, para \(n=5\), el grafo de vecindad 2-opt sobre las
+\(12\) rutas es bipartito, así que la cadena con matriz \(R\) tiene
+período \(2\). Para \(n=4,6,7\), el grafo no es bipartito. En la cadena
+de Metropolis la aperiodicidad no proviene de \(R\), sino de los
+rechazos (proposición~\ref{prop:aperiodica}).
+\end{observacion}
+
+% ------------------------------------------------
+\subsection{La cadena de Metropolis a temperatura fija}
+\label{subsec:metropolis}
+
+Fijada una \emph{temperatura} \(T>0\), la regla de Metropolis
+\citep{metropolis1953,hastings1970} acepta un movimiento propuesto de
+\(x\) a \(y\) con probabilidad
+\begin{equation}
+\label{eq:aceptacion}
+A_T(x,y)=\min\Bigl\{1,\;e^{-(f(y)-f(x))/T}\Bigr\}.
+\end{equation}
+Un movimiento que no empeora el costo se acepta siempre; uno que lo
+empeora en \(\Delta>0\) se acepta con probabilidad \(e^{-\Delta/T}\).
+
+\begin{definicion}[Cadena de Metropolis]
+\label{def:metropolis}
+La cadena de Metropolis a temperatura \(T\) sobre \(S_n\) tiene matriz
+de transición
+\begin{equation}
+\label{eq:metropolis}
+P_T(x,y)=
+\begin{cases}
+R(x,y)\,A_T(x,y), & y\ne x,\\[0.5ex]
+1-\displaystyle\sum_{z\ne x}R(x,z)\,A_T(x,z), & y=x.
+\end{cases}
+\end{equation}
+Es decir, en cada paso se propone \(y\in N(x)\) uniformemente al azar;
+con probabilidad \(A_T(x,y)\) la cadena se mueve a \(y\) y, en caso
+contrario, permanece en \(x\).
+\end{definicion}
+
+\begin{definicion}[Distribución de Boltzmann]
+\label{def:boltzmann}
+La \emph{distribución de Boltzmann} (o de Gibbs) a temperatura \(T\) es
+\begin{equation}
+\label{eq:boltzmann}
+\pi_T(x)=\frac{e^{-f(x)/T}}{Z_T},
+\qquad
+Z_T=\sum_{z\in S_n}e^{-f(z)/T}.
+\end{equation}
+\end{definicion}
+
+\begin{proposicion}[Balance detallado]
+\label{prop:balance}
+Para todo \(T>0\), la cadena \(P_T\) es reversible respecto de
+\(\pi_T\). En consecuencia, \(\pi_T\) es estacionaria para \(P_T\).
+\end{proposicion}
+
+\begin{proof}
+Basta verificar \eqref{eq:balance} para \(x\ne y\) con
+\(y\in N(x)\); si \(y\notin N(x)\), ambos lados valen cero por la
+proposición~\ref{prop:vecindad}(b). Supongamos, sin pérdida de
+generalidad, \(f(y)\ge f(x)\). Entonces \(A_T(x,y)=e^{-(f(y)-f(x))/T}\)
+y \(A_T(y,x)=1\), y usando \(R(x,y)=R(y,x)\),
+\[
+\pi_T(x)P_T(x,y)
+=\frac{e^{-f(x)/T}}{Z_T}\,R(x,y)\,e^{-(f(y)-f(x))/T}
+=\frac{e^{-f(y)/T}}{Z_T}\,R(y,x)
+=\pi_T(y)P_T(y,x).
+\]
+La estacionariedad se sigue de la observación posterior a la
+definición~\ref{def:propiedades}.
+\end{proof}
+
+Notemos que \(\pi_T\) se conoce salvo la constante \(Z_T\), cuyo
+cálculo exige recorrer \(S_n\). La cadena de Metropolis solo usa
+cocientes \(\pi_T(y)/\pi_T(x)=e^{-(f(y)-f(x))/T}\), en los que \(Z_T\)
+se cancela; esta es la razón por la cual el método es aplicable cuando
+\(|S_n|\) es astronómico.
+
+\begin{proposicion}[Aperiodicidad]
+\label{prop:aperiodica}
+Si \(f\) no es constante sobre \(S_n\), entonces \(P_T\) es irreducible
+y aperiódica para todo \(T>0\).
+\end{proposicion}
+
+\begin{proof}
+Para \(y\in N(x)\) se tiene \(P_T(x,y)=R(x,y)A_T(x,y)>0\), pues
+\(A_T>0\). Así, todo camino de movimientos 2-opt tiene probabilidad
+positiva bajo \(P_T\), y la irreducibilidad se sigue de la
+proposición~\ref{prop:irreducible}. Para la aperiodicidad, como \(f\)
+no es constante y el grafo de vecindad es conexo, existe una arista
+\(\{x,y\}\) del grafo con \(f(y)>f(x)\). Entonces
+\[
+P_T(x,x)\ge R(x,y)\bigl(1-A_T(x,y)\bigr)
+=R(x,y)\bigl(1-e^{-(f(y)-f(x))/T}\bigr)>0,
+\]
+y un estado con lazo basta para una cadena irreducible.
+\end{proof}
+
+\begin{corolario}
+\label{cor:metropolis}
+Si \(f\) no es constante, para todo \(T>0\) la cadena \(P_T\) tiene a
+\(\pi_T\) como única distribución estacionaria,
+\(P_T^t(x,\cdot)\to\pi_T\) para toda \(x\), y las frecuencias empíricas
+de visita convergen casi seguramente a \(\pi_T\).
+\end{corolario}
+
+\begin{proof}
+Es consecuencia directa de las proposiciones~\ref{prop:balance}
+y~\ref{prop:aperiodica} y de los
+teoremas~\ref{teo:unicidad}--\ref{teo:ergodico}.
+\end{proof}
+
+% ------------------------------------------------
+\subsection{El papel de la temperatura}
+\label{subsec:temperatura}
+
+La temperatura interpola entre una exploración uniforme y una
+concentración en los óptimos.
+
+\begin{proposicion}
+\label{prop:temperatura}
+Sea \(U\) la distribución uniforme sobre \(S_n\) y \(U^\ast\) la
+uniforme sobre \(\Sopt\). Entonces:
+\begin{enumerate}[label=(\alph*)]
+    \item \(\pi_T\to U\) cuando \(T\to\infty\);
+    \item \(\pi_T\to U^\ast\) cuando \(T\to 0^+\);
+    \item el costo medio \(\E_{\pi_T}[f]=\sum_x f(x)\pi_T(x)\) es no
+    decreciente en \(T\), pues
+    \begin{equation}
+    \label{eq:derivada}
+    \frac{d}{dT}\,\E_{\pi_T}[f]=\frac{\Var_{\pi_T}(f)}{T^2}\ge 0.
+    \end{equation}
+\end{enumerate}
+\end{proposicion}
+
+\begin{proof}
+(a) Cada término \(e^{-f(x)/T}\to 1\), luego \(\pi_T(x)\to1/|S_n|\).
+
+(b) Multiplicando numerador y denominador por \(e^{f^\ast/T}\),
+\[
+\pi_T(x)=\frac{e^{-(f(x)-f^\ast)/T}}{|\Sopt|+\sum_{z\notin\Sopt}e^{-(f(z)-f^\ast)/T}}.
+\]
+Si \(z\notin\Sopt\), entonces \(f(z)-f^\ast>0\) y
+\(e^{-(f(z)-f^\ast)/T}\to 0\). Por lo tanto \(\pi_T(x)\to1/|\Sopt|\) si
+\(x\in\Sopt\) y \(\pi_T(x)\to 0\) en otro caso.
+
+(c) Sea \(\beta=1/T\) y
+\(E(\beta)=Z^{-1}\sum_x f(x)e^{-\beta f(x)}\). Derivando,
+\[
+E'(\beta)=-\frac{\sum_x f(x)^2e^{-\beta f(x)}}{Z}
++\Bigl(\frac{\sum_x f(x)e^{-\beta f(x)}}{Z}\Bigr)^2
+=-\Var_{\pi_T}(f).
+\]
+Como \(d\beta/dT=-1/T^2\), la regla de la cadena da
+\eqref{eq:derivada}.
+\end{proof}
+
+La proposición~\ref{prop:temperatura} motiva el recocido simulado: a
+temperatura baja, una muestra de \(\pi_T\) es casi siempre una ruta
+óptima. La dificultad es que, como se ve a continuación, a temperatura
+baja la cadena tarda exponencialmente en alcanzar el equilibrio.
+
+% ------------------------------------------------
+\subsection{Velocidad de convergencia y brecha espectral}
+\label{subsec:brecha}
+
+Como \(P_T\) es reversible respecto de \(\pi_T\), es autoadjunta en el
+espacio \(\ell^2(\pi_T)\) con producto interno
+\(\langle g,h\rangle_{\pi_T}=\sum_x g(x)h(x)\pi_T(x)\). Por lo tanto sus
+valores propios son reales y, si \(N=|S_n|\), pueden ordenarse como
+\[
+1=\lambda_1>\lambda_2\ge\cdots\ge\lambda_N>-1,
+\]
+donde la desigualdad estricta \(\lambda_1>\lambda_2\) se debe a la
+irreducibilidad y \(\lambda_N>-1\) a la aperiodicidad
+\citep[cap.~12]{levin2017}.
+
+\begin{definicion}[Brecha espectral]
+\label{def:brecha}
+La \emph{brecha espectral} de \(P_T\) es
+\(\gamma(T)=1-\lambda_2\), y la \emph{brecha absoluta} es
+\(\gamma_\ast(T)=1-\lambda_\ast\), con
+\(\lambda_\ast=\max\{|\lambda_2|,|\lambda_N|\}\). El \emph{tiempo de
+relajación} es \(t_{\mathrm{rel}}=1/\gamma_\ast\).
+\end{definicion}
+
+\begin{proposicion}[Cota espectral]
+\label{prop:cota_espectral}
+Sea \(\pi_{\min}=\min_x\pi_T(x)\). Para todo \(t\ge 0\),
+\[
+\max_{x\in S_n}\bigl\|P_T^t(x,\cdot)-\pi_T\bigr\|_{\TV}
+\le\frac{\lambda_\ast^{\,t}}{2\,\pi_{\min}}
+\le\frac{e^{-\gamma_\ast t}}{2\,\pi_{\min}}.
+\]
+\end{proposicion}
+
+\begin{proof}
+Sea \(\{\varphi_j\}_{j=1}^N\) una base ortonormal de \(\ell^2(\pi_T)\)
+formada por vectores propios de \(P_T\), con \(\varphi_1\equiv1\). La
+descomposición espectral da
+\[
+\frac{P_T^t(x,y)}{\pi_T(y)}=1+\sum_{j=2}^N\varphi_j(x)\varphi_j(y)\lambda_j^t.
+\]
+Aplicando la ortonormalidad a la función \(\mathbf 1_{\{x\}}\) se
+obtiene \(\sum_{j}\varphi_j(x)^2=1/\pi_T(x)\). Por la desigualdad de
+Cauchy--Schwarz,
+\[
+\Bigl|\frac{P_T^t(x,y)}{\pi_T(y)}-1\Bigr|
+\le\lambda_\ast^{\,t}\,\frac{1}{\sqrt{\pi_T(x)\pi_T(y)}}
+\le\frac{\lambda_\ast^{\,t}}{\pi_{\min}}.
+\]
+Multiplicando por \(\pi_T(y)/2\) y sumando sobre \(y\) se obtiene la
+primera desigualdad; la segunda se sigue de
+\(1-\gamma_\ast\le e^{-\gamma_\ast}\). Véase también
+\citet[cap.~12]{levin2017}.
+\end{proof}
+
+Así, el número de pasos necesarios para que la cadena olvide su estado
+inicial es del orden de \(t_{\mathrm{rel}}\), salvo un factor
+logarítmico en \(1/\pi_{\min}\). A temperatura baja, \citet{ingrassia1994}
+muestra que para la cadena de Metropolis la brecha que domina es
+\(\gamma=1-\lambda_2\). Su comportamiento depende de la geometría del
+paisaje de costos, que se describe con las siguientes nociones
+\citep{hajek1988}.
+
+\begin{definicion}[Altura de comunicación y profundidad]
+\label{def:profundidad}
+Para un camino \(x=x_0,x_1,\ldots,x_k=y\) con \(x_{i+1}\in N(x_i)\), su
+\emph{altura} es \(\max_i f(x_i)\). La \emph{altura de comunicación}
+\(H(x,y)\) es la mínima altura entre todos los caminos de \(x\) a
+\(y\). Un estado \(x\) es un \emph{mínimo local} si \(f(x)\le f(y)\)
+para todo \(y\in N(x)\). Para \(x\notin\Sopt\), su \emph{profundidad} es
+\[
+h(x)=\min_{y:\,f(y)<f(x)}H(x,y)-f(x),
+\]
+es decir, la mínima subida necesaria para escapar de \(x\) hacia un
+estado estrictamente mejor. La \emph{profundidad crítica} es
+\[
+h^\ast=\max_{x\notin\Sopt}h(x),
+\]
+la profundidad del pozo no óptimo más hondo.
+\citet{hajek1988} denota esta constante por \(d^\ast\).
+\end{definicion}
+
+Si \(x\) no es mínimo local, existe un vecino mejor y \(h(x)=0\). Por
+lo tanto, \(h^\ast>0\) si y solo si existe un mínimo local que no es
+global. La profundidad crítica gobierna la brecha espectral a
+temperatura baja.
+
+\begin{teorema}[Brecha a temperatura baja]
+\label{teo:brecha_baja}
+Supongamos que \(f\) tiene un único mínimo global. Entonces
+\[
+\lim_{T\to 0^+}T\log\gamma(T)=-h^\ast,
+\]
+es decir, \(\gamma(T)=e^{-h^\ast/T+o(1/T)}\) y
+\(t_{\mathrm{rel}}\approx e^{h^\ast/T}\).
+\end{teorema}
+
+Este resultado se debe a \citet{holley1988} y \citet{holley1989}; la
+formulación y la identificación de la constante con la profundidad
+crítica de Hajek siguen a \citet{bertsimas1993}. El
+teorema~\ref{teo:brecha_baja} da una predicción cuantitativa que se
+verifica en la sección~\ref{sec:resultados}: en una gráfica de
+\(-\log\gamma(T)\) frente a \(1/T\), la pendiente a temperatura baja
+debe aproximarse a \(h^\ast\), que para \(n=5\) puede calcularse de
+forma exacta recorriendo el grafo de vecindad.
+
+% ------------------------------------------------
+\subsection{El recocido simulado como cadena no homogénea}
+\label{subsec:recocido}
+
+El teorema~\ref{teo:brecha_baja} expone el dilema: una temperatura baja
+concentra \(\pi_T\) en \(\Sopt\), pero hace que la cadena tarde del
+orden de \(e^{h^\ast/T}\) pasos en equilibrarse. El \emph{recocido
+simulado} \citep{kirkpatrick1983,cerny1985} resuelve el dilema
+disminuyendo la temperatura de forma gradual.
+
+\begin{definicion}[Recocido simulado]
+\label{def:recocido}
+Sea \((T_k)_{k\ge0}\) una sucesión de temperaturas positivas, no
+creciente y con \(T_k\to0\), llamada \emph{esquema de enfriamiento}. El
+\emph{recocido simulado} es la cadena de Markov \emph{no homogénea}
+\((X_k)_{k\ge 0}\) con
+\[
+\Prob(X_{k+1}=y\mid X_k=x)=P_{T_k}(x,y),
+\]
+donde \(P_{T_k}\) es la matriz de Metropolis \eqref{eq:metropolis} a
+temperatura \(T_k\).
+\end{definicion}
+
+Como las matrices de transición cambian con \(k\), los
+teoremas~\ref{teo:unicidad}--\ref{teo:ergodico} ya no se aplican. La
+pregunta natural es si \(\Prob(X_k\in\Sopt)\to1\). La respuesta
+completa la da el teorema de Hajek; sus hipótesis de irreducibilidad y
+de reversibilidad débil se cumplen aquí por las
+proposiciones~\ref{prop:vecindad}(b) y~\ref{prop:irreducible}.
+
+\begin{teorema}[\citealp{hajek1988}]
+\label{teo:hajek}
+Sea \((T_k)\) no creciente con \(T_k\to0\). Entonces
+\[
+\lim_{k\to\infty}\Prob(X_k\in\Sopt)=1
+\quad\Longleftrightarrow\quad
+\sum_{k=0}^{\infty}e^{-h^\ast/T_k}=\infty.
+\]
+\end{teorema}
+
+\begin{corolario}[Enfriamiento logarítmico frente a geométrico]
+\label{cor:enfriamiento}
+Supongamos \(h^\ast>0\).
+\begin{enumerate}[label=(\alph*)]
+    \item Con el esquema logarítmico \(T_k=c/\log(k+2)\), el recocido
+    converge a \(\Sopt\) si y solo si \(c\ge h^\ast\).
+    \item Con el esquema geométrico \(T_k=T_0\alpha^k\), con
+    \(0<\alpha<1\), no se cumple \(\Prob(X_k\in\Sopt)\to1\).
+\end{enumerate}
+\end{corolario}
+
+\begin{proof}
+(a) Se tiene \(e^{-h^\ast/T_k}=(k+2)^{-h^\ast/c}\), y la serie
+\(\sum_k (k+2)^{-h^\ast/c}\) diverge si y solo si \(h^\ast/c\le1\).
+
+(b) Se tiene \(e^{-h^\ast/T_k}=\exp(-h^\ast\alpha^{-k}/T_0)\). Como
+\(\alpha^{-k}\ge k\) para \(k\) grande, el término general está acotado
+por \(e^{-(h^\ast/T_0)k}\), cuya serie converge. Por el
+teorema~\ref{teo:hajek}, no hay convergencia a \(\Sopt\) con
+probabilidad tendiente a uno.
+\end{proof}
+
+El corolario~\ref{cor:enfriamiento} muestra una tensión entre teoría y
+práctica. El esquema logarítmico garantiza convergencia pero es
+extremadamente lento: para bajar de \(T_0\) a \(T_0/2\) hay que elevar
+al cuadrado el número de pasos. Por eso, en la práctica se usa el
+esquema geométrico, que carece de garantía asintótica pero, con un
+presupuesto finito de pasos, suele dar soluciones de muy buena calidad
+\citep{delahaye2019}. Una forma habitual de implementarlo es mantener
+cada temperatura durante \(L\) pasos antes de multiplicarla por
+\(\alpha\), para que la cadena se aproxime a \(\pi_{T}\) en cada
+nivel.
+
+% ------------------------------------------------
+\subsection{Variante sobre el modelo QUBO}
+\label{subsec:qubo}
+
+El recocido también puede aplicarse a una formulación del TSP como
+problema de optimización cuadrática binaria sin restricciones (QUBO),
+que es la forma de entrada de los recocedores cuánticos
+\citep{lucas2014,glover2022,bochkarev2026}. Esta variante cambia el
+espacio de estados, y con él la geometría del paisaje.
+
+\paragraph{Formulación.} Se fija la ciudad \(1\) en la posición \(1\) y
+se usan variables binarias \(y_{ik}\in\{0,1\}\), para
+\(i,k\in\{2,\ldots,n\}\), con \(y_{ik}=1\) si la ciudad \(i\) ocupa la
+posición \(k\). El vector \(y\) tiene \(m=(n-1)^2\) componentes. El
+costo de recorrido es
+\begin{equation}
+\label{eq:costo_qap}
+f_{\mathrm Q}(y)=\sum_{i=2}^n c_{1i}\,y_{i2}
++\sum_{i=2}^n c_{i1}\,y_{in}
++\sum_{k=2}^{n-1}\sum_{i\ne j}c_{ij}\,y_{ik}\,y_{j,k+1},
+\end{equation}
+y las restricciones de asignación se incorporan como penalización:
+\begin{equation}
+\label{eq:penalizacion}
+\Phi(y)=\sum_{i=2}^n\Bigl(\sum_{k=2}^n y_{ik}-1\Bigr)^2
++\sum_{k=2}^n\Bigl(\sum_{i=2}^n y_{ik}-1\Bigr)^2,
+\qquad
+E_M(y)=f_{\mathrm Q}(y)+M\,\Phi(y),
+\end{equation}
+con \(M>0\). Usando \(y_{ik}^2=y_{ik}\), la energía se escribe como
+\(E_M(y)=y^{\top}Qy+\text{const}\) con \(Q\) simétrica, que es la forma
+QUBO. Sea \(F\subset\{0,1\}^m\) el conjunto de vectores
+\emph{factibles}, aquellos con \(\Phi(y)=0\), que son las matrices de
+permutación. Para \(y\in F\), \(f_{\mathrm Q}(y)\) es el costo de la
+ruta correspondiente; cada ruta corresponde a dos elementos de \(F\),
+uno por cada sentido, así que \(|F|=(n-1)!\).
+
+\begin{proposicion}[Equivalencia para \(M\) grande]
+\label{prop:equivalencia}
+Si \(M>f^\ast\), todo minimizador global de \(E_M\) es factible y
+corresponde a una ruta óptima.
+\end{proposicion}
+
+\begin{proof}
+Si \(y\notin F\), \(\Phi(y)\) es un entero positivo, luego
+\(\Phi(y)\ge1\). Como \(c_{ij}\ge0\), se tiene \(f_{\mathrm Q}\ge0\) y
+\(E_M(y)\ge M>f^\ast\). En cambio, el elemento de \(F\) asociado a una
+ruta óptima tiene energía \(f^\ast\). Así, ningún vector infactible es
+minimizador, y entre los factibles \(E_M=f_{\mathrm Q}\) se minimiza en
+las rutas óptimas.
+\end{proof}
+
+La condición \(M>f^\ast\) es suficiente, no necesaria: el umbral exacto
+\(M^\ast\) a partir del cual se preserva la equivalencia puede ser
+menor. Como \(f^\ast\) es desconocido, en la práctica se usa una cota
+superior, como el costo de cualquier ruta conocida. Elegir \(M\)
+demasiado pequeño hace que el mínimo de \(E_M\) sea infactible; la
+proposición siguiente muestra que elegirlo demasiado grande también
+tiene un costo, esta vez para la cadena.
+
+\paragraph{La cadena.} El espacio de estados es \(\{0,1\}^m\) y la
+propuesta consiste en voltear un bit elegido uniformemente al azar:
+\(R_{\mathrm Q}(y,y')=1/m\) si \(y\) y \(y'\) difieren en exactamente una
+coordenada. El grafo de vecindad es el hipercubo, que es conexo, y
+\(R_{\mathrm Q}\) es simétrica. Por lo tanto, la cadena de Metropolis
+con energía \(E_M\) es reversible respecto de
+\(\pi_T(y)\propto e^{-E_M(y)/T}\). Como el hipercubo es bipartito, la
+aperiodicidad proviene nuevamente de los rechazos, con el mismo
+argumento de la proposición~\ref{prop:aperiodica}. La diferencia con la
+cadena sobre rutas está en el paisaje.
+
+\begin{proposicion}[Barrera de penalización]
+\label{prop:barrera}
+Sean \(y\in F\) y \(y'\) un vector que difiere de \(y\) en un solo bit.
+Entonces
+\begin{enumerate}[label=(\alph*)]
+    \item \(\Phi(y')=2\) y
+    \(E_M(y')-E_M(y)\ge 2M-2\cmax\);
+    \item dos elementos distintos de \(F\) difieren en al menos \(4\)
+    coordenadas, de modo que todo camino de volteos de un bit entre
+    ellos pasa por vectores infactibles;
+    \item si \(M>\cmax\), cada elemento de \(F\) es un mínimo local
+    estricto de \(E_M\), y la profundidad de cada uno que no es óptimo
+    es al menos \(2M-2\cmax\). En particular, si existen rutas no
+    óptimas, la profundidad crítica de la cadena QUBO cumple
+    \[
+    h^\ast_M\ge 2M-2\cmax .
+    \]
+\end{enumerate}
+\end{proposicion}
+
+\begin{proof}
+(a) Si se apaga un bit \(y_{ik}=1\), la fila \(i\) y la columna \(k\)
+quedan con suma \(0\); si se enciende un bit \(y_{ik}=0\), ambas quedan
+con suma \(2\). En los dos casos, dos términos de \(\Phi\) valen \(1\) y
+los demás \(0\), luego \(\Phi(y')=2\). Encender un bit solo agrega
+términos no negativos a \eqref{eq:costo_qap}. Apagar \(y_{ik}\) elimina,
+a lo sumo, los dos términos que unen la ciudad \(i\) con sus vecinas en
+las posiciones \(k-1\) y \(k+1\), incluidos los términos lineales si
+\(k=2\) o \(k=n\). Así, \(f_{\mathrm Q}(y')\ge f_{\mathrm Q}(y)-2\cmax\)
+y \(E_M(y')-E_M(y)\ge 2M-2\cmax\).
+
+(b) Dos matrices de permutación distintas difieren en al menos dos
+filas, y en cada una de esas filas el \(1\) cambia de columna, lo que
+modifica dos entradas por fila.
+
+(c) Por (a), todos los vecinos de \(y\in F\) tienen energía
+estrictamente mayor cuando \(M>\cmax\). Cualquier camino que salga de
+\(y\) pasa primero por un vecino, así que su altura supera \(E_M(y)\) en
+al menos \(2M-2\cmax\). Si \(y\) no es óptimo, la definición de
+profundidad da \(h(y)\ge 2M-2\cmax\).
+\end{proof}
+
+La proposición~\ref{prop:barrera}, junto con el
+teorema~\ref{teo:brecha_baja}, explica la dificultad de la variante
+QUBO. Su tiempo de relajación a temperatura baja crece al menos como
+\(e^{(2M-2\cmax)/T}\). Así, aumentar \(M\) para garantizar la
+equivalencia (proposición~\ref{prop:equivalencia}) hace la cadena
+exponencialmente más lenta, mientras que reducirlo puede volver
+infactible el mínimo. Se espera entonces que el desempeño del recocido
+sobre el QUBO, como función de \(M\), tenga forma de U, con el mejor
+valor cerca del umbral de equivalencia. En contraste, la cadena sobre
+rutas nunca sale del conjunto factible: cada movimiento 2-opt lleva de
+una ruta a otra, y las únicas barreras son las del propio costo \(f\).
+Esta diferencia se contrasta experimentalmente en la
+sección~\ref{sec:resultados}.
