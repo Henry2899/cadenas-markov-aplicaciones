@@ -5,4 +5,188 @@
 \section{Metodología e implementación computacional}
 \label{sec:metodologia}
 
-TODO: pseudocódigo, diseño de los experimentos, semilla y enlace al notebook de Colab.
+% Palabras clave del pseudocódigo en español y sin líneas de cierre.
+\floatname{algorithm}{Algoritmo}
+\algrenewcommand\algorithmicrequire{\textbf{Entrada:}}
+\algrenewcommand\algorithmicensure{\textbf{Salida:}}
+\algrenewcommand\algorithmicfor{\textbf{para}}
+\algrenewcommand\algorithmicdo{\textbf{hacer}}
+\algrenewcommand\algorithmicif{\textbf{si}}
+\algrenewcommand\algorithmicthen{\textbf{entonces}}
+\algrenewcommand\algorithmicelse{\textbf{si no}}
+\algrenewcommand\algorithmicreturn{\textbf{devolver}}
+\algtext*{EndFor}
+\algtext*{EndIf}
+
+\subsection{Implementación y reproducibilidad}
+\label{subsec:implementacion}
+
+Todo el código está en un notebook de Google Colab, ejecutado con todas
+sus salidas visibles:
+
+\begin{center}
+\small
+\url{https://colab.research.google.com/github/Henry2899/cadenas-markov-aplicaciones/blob/main/proyecto-final-recocido-tsp/notebook/proyecto_final.ipynb}
+\end{center}
+
+El notebook está escrito en Python~3 con NumPy, pandas y Matplotlib, y
+no usa ningún solucionador externo. Está organizado en el mismo orden que
+este informe: primero las instancias, las rutas y la vecindad 2-opt;
+después la cadena de Metropolis, el recocido simulado y la formulación
+QUBO; luego la construcción exacta de la cadena para \(n\) pequeño, y
+finalmente una sección por experimento. Cada experimento fija su
+semilla con el generador \texttt{numpy.random.default\_rng}, de modo que
+al ejecutar el notebook completo se obtienen exactamente las tablas y
+figuras que se presentan en la sección~\ref{sec:resultados}. Las
+instancias de TSPLIB están incrustadas como coordenadas, así que no es
+necesario descargar nada. La ejecución completa en Colab tarda unos pocos
+minutos.
+
+\subsection{Instancias}
+\label{subsec:instancias}
+
+Se usan dos familias de instancias simétricas:
+
+\begin{itemize}
+    \item \textbf{Aleatorias.} Se generan \(n\) puntos uniformes en
+    \([0,1000]^2\), con coordenadas redondeadas a un decimal, y la
+    distancia euclidiana se redondea al entero más cercano (convención
+    \texttt{EUC\_2D} de TSPLIB). Con \(n=5\) hay \(12\) rutas, lo que
+    permite construir la cadena de forma exacta; con \(n=8\) hay
+    \(2520\) y el óptimo se obtiene por enumeración.
+    \item \textbf{TSPLIB}. Se usan \texttt{burma14}, \texttt{ulysses16},
+    \texttt{ulysses22} y \texttt{berlin52}. Las tres primeras usan la
+    distancia geográfica \texttt{GEO} y la última la euclidiana
+    \texttt{EUC\_2D}; sus óptimos publicados son \(3323\), \(6859\),
+    \(7013\) y \(7542\), respectivamente.
+\end{itemize}
+
+\subsection{El algoritmo de recocido simulado}
+\label{subsec:algoritmo}
+
+El algoritmo~\ref{alg:recocido} resume la implementación sobre rutas.
+Cada paso elige un par de posiciones \(\{i,j\}\) uniforme entre los
+\(\binom n2\) posibles, que es la propuesta \eqref{eq:propuesta} con sus
+movimientos nulos. El cambio de costo de un movimiento 2-opt se calcula
+en tiempo constante,
+\[
+\Delta=c_{x_1y_1}+c_{x_2y_2}-c_{x_1x_2}-c_{y_1y_2},
+\]
+donde \(x_1,x_2\) son las ciudades en las posiciones \(i,i+1\) y
+\(y_1,y_2\) las de las posiciones \(j,j+1\).
+
+\begin{algorithm}[H]
+\caption{Recocido simulado sobre rutas con vecindad 2-opt}
+\label{alg:recocido}
+\begin{algorithmic}[1]
+\Require costos \(c_{ij}\), semilla
+\Ensure la mejor ruta visitada
+\State \(x\gets\) permutación aleatoria; \(x^{\mathrm{mejor}}\gets x\)
+\State calibrar \(T_0\) con \(e^{-\bar\Delta/T_0}=0.8\), donde
+\(\bar\Delta\) es la media de las subidas en \(1000\) movimientos al azar
+\State \(T_{\mathrm{final}}\gets10^{-3}T_0\);\quad \(\alpha\gets0.95\);\quad
+\(L\gets10\binom n2\)
+\For{\(T=T_0,\,\alpha T_0,\,\alpha^2T_0,\ldots\ge T_{\mathrm{final}}\)}
+    \For{\(L\) pasos}
+        \State elegir \(\{i,j\}\) uniforme entre los \(\binom n2\) pares
+        \If{el movimiento no es nulo}
+            \State calcular \(\Delta\) y tomar \(u\sim\mathrm{Unif}(0,1)\)
+            \If{\(\Delta\le0\) o \(u<e^{-\Delta/T}\)}
+                \State invertir el tramo entre las posiciones \(i+1\) y \(j\)
+                \State actualizar \(x^{\mathrm{mejor}}\) si \(f(x)<f(x^{\mathrm{mejor}})\)
+            \EndIf
+        \EndIf
+    \EndFor
+\EndFor
+\State \Return \(x^{\mathrm{mejor}}\)
+\end{algorithmic}
+\end{algorithm}
+
+Con estos parámetros el esquema tiene \(135\) niveles de temperatura,
+porque \(\lfloor\log(10^{-3})/\log(0.95)\rfloor+1=135\). Así, cada
+corrida da \(135\,L\) pasos; por ejemplo, \(1\,790\,100\) pasos para
+\texttt{berlin52}. Cada nivel es un tramo de cadena homogénea de
+longitud \(L\), diez veces el número de pares de posiciones, de modo
+que la cadena tiene oportunidad de acercarse a \(\pi_T\) antes de bajar
+la temperatura. Este esquema es geométrico y, por el
+corolario~\ref{cor:enfriamiento}, no tiene garantía asintótica de
+convergencia.
+
+\paragraph{Variante QUBO.} El recocido sobre el QUBO tiene la misma
+estructura, con tres cambios: el estado inicial es un vector binario
+uniforme; cada paso propone voltear un bit uniforme entre los
+\(m=(n-1)^2\); y \(L=10m\). El cambio de energía al voltear el bit
+\(k\) se obtiene en tiempo constante a partir del \emph{campo local},
+\(\Delta E=(1-2y_k)\bigl(q_{kk}+(Ay)_k\bigr)\), donde \(A=Q+Q^{\top}\)
+con diagonal nula; el campo se actualiza solo cuando se acepta el
+volteo. Además de la asignación de menor energía, se registra la mejor
+asignación \emph{factible} visitada, que corresponde a una ruta.
+
+\subsection{Diseño de los experimentos}
+\label{subsec:diseno}
+
+La tabla~\ref{tab:experimentos} resume los cinco experimentos. Los tres
+primeros usan la cadena homogénea con \(n=5\), donde \(P_T\), \(\pi_T\),
+el espectro y la profundidad crítica se calculan de forma exacta. Los
+dos últimos usan el recocido completo.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}p{2.8cm}p{4.3cm}p{6.4cm}@{}}
+\toprule
+Experimento & Instancias y parámetros & Qué se mide y qué resultado verifica \\
+\midrule
+1. Temperatura & aleatoria \(n=5\), semilla 0; \(T\in\{2,0.5,0.1\}\) veces el rango de costos &
+\(\pi_T\) exacta y \(\E_{\pi_T}[f]\) frente a \(T\)
+(proposición~\ref{prop:temperatura}). \\[0.5ex]
+2. Ergodicidad & la misma instancia; \(T=0.5\) veces el rango; \(200\,000\) pasos, semilla 1 &
+frecuencias empíricas frente a \(\pi_T\) y distancia de variación
+total frente a los pasos (teorema~\ref{teo:ergodico}). \\[0.5ex]
+3. Brecha espectral & semilla 0 y una instancia con un solo mínimo
+local; 10 temperaturas entre \(5\) y \(0.005\) veces el rango &
+\(\gamma(T)\), tiempo de relajación, \(\pi_T(\Sopt)\) y pendiente de
+\(-\log\gamma\) frente a \(1/T\), comparada con \(h^\ast\)
+(teorema~\ref{teo:brecha_baja}). \\[0.5ex]
+4. TSPLIB & 4 instancias, 10 semillas cada una (40 corridas) &
+brecha porcentual frente al óptimo publicado y evolución del costo y de
+la tasa de aceptación por nivel (sección~\ref{subsec:recocido}). \\[0.5ex]
+5. QUBO y \(M\) & aleatorias \(n=5\) y \(n=8\), \texttt{burma14}; 10
+semillas; \(M\in\{0.25,0.5,1,2,4\}\max c\), \(M=U+1\) y, con \(n=5\),
+\(M=1.1M^\ast\) &
+si la corrida termina en una ruta, si visita alguna y la brecha de la
+mejor ruta visitada; referencia: recocido sobre rutas con las mismas
+semillas (proposiciones~\ref{prop:equivalencia} y~\ref{prop:barrera}). \\
+\bottomrule
+\end{tabular}
+\caption{Diseño de los experimentos.}
+\label{tab:experimentos}
+\end{table}
+
+\subsection{Cálculos exactos y métricas}
+\label{subsec:metricas}
+
+Para \(n=5\), la matriz \(P_T\) se construye recorriendo, para cada una
+de las \(12\) rutas, los \(\binom52=10\) pares de posiciones, con la
+misma regla del algoritmo~\ref{alg:recocido}. La distribución
+estacionaria se obtiene resolviendo \(\pi P_T=\pi\) con
+\(\sum_x\pi(x)=1\), y se compara con la de Boltzmann \eqref{eq:boltzmann}.
+
+Los valores propios se calculan a partir de la matriz simétrica
+\(D^{1/2}P_TD^{-1/2}\), con \(D=\operatorname{diag}(\pi_T)\), que tiene
+el mismo espectro que \(P_T\) por la reversibilidad. Para evitar
+dividir por probabilidades casi nulas a temperatura baja, sus entradas
+se escriben como \(P_T(x,y)\,e^{(f(y)-f(x))/2T}\). Se reporta la brecha
+absoluta \(\gamma_\ast\), que para \(n=5\) coincide con \(\gamma\) por
+la proposición~\ref{prop:espectro_lazy}.
+
+La profundidad de un mínimo local se calcula por niveles: para cada
+valor \(h\) posible, se explora el grafo de vecindad restringido a las
+rutas de costo a lo sumo \(f(x)+h\) y se busca la primera altura a la
+que se alcanza una ruta mejor. Por último, se usan dos métricas:
+\begin{itemize}
+    \item la \emph{brecha porcentual} \(100\,(f(x)-f^\ast)/f^\ast\) de
+    la mejor ruta encontrada respecto del óptimo;
+    \item la \emph{distancia de variación total} entre las frecuencias
+    empíricas \(\hat\pi_t\) de los primeros \(t\) pasos y \(\pi_T\).
+\end{itemize}

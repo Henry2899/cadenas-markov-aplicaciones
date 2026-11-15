@@ -5,4 +5,308 @@
 \section{Resultados de las simulaciones y análisis}
 \label{sec:resultados}
 
-TODO
+Todas las cifras de esta sección provienen del notebook descrito en la
+sección~\ref{subsec:implementacion}. Las tablas completas están en la
+carpeta \texttt{results/} del repositorio.
+
+\subsection{Verificación de las propiedades de la cadena}
+\label{subsec:res_verificacion}
+
+Antes de los experimentos se comprobaron numéricamente las propiedades
+demostradas en la sección~\ref{sec:marco}, para \(n=4,\ldots,7\)
+(tabla~\ref{tab:verificacion}). Todas las rutas tienen exactamente
+\(n(n-3)/2\) vecinos y la vecindad es simétrica
+(proposición~\ref{prop:vecindad}). El grafo de vecindad es conexo, con
+diámetro a lo sumo \(n-2\) (proposición~\ref{prop:irreducible}), y solo
+es bipartito para \(n=5\) (observación~\ref{obs:bipartito}). Además, el
+balance detallado respecto de Boltzmann se cumple hasta el error de
+redondeo (proposición~\ref{prop:balance}), y el menor valor propio de
+\(P_T\) supera la cota \(2\delta-1\) de la
+proposición~\ref{prop:espectro_lazy}; en particular es positivo para
+\(n=5\).
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}rrrrcccc@{}}
+\toprule
+\(n\) & rutas & vecinos & \(n(n-3)/2\) & diámetro (\(\le n-2\)) & bipartito
+& error de balance & \(\lambda_{\min}\) (cota \(2\delta-1\)) \\
+\midrule
+4 &   3 &  2 &  2 & 1 (2) & no & \(3\times10^{-20}\) & 0.666 (0.333) \\
+5 &  12 &  5 &  5 & 3 (3) & sí & \(3\times10^{-18}\) & 0.385 (0) \\
+6 &  60 &  9 &  9 & 3 (4) & no & \(9\times10^{-19}\) & 0.311 (\(-0.2\)) \\
+7 & 360 & 14 & 14 & 4 (5) & no & \(7\times10^{-19}\) & 0.207 (\(-0.333\)) \\
+\bottomrule
+\end{tabular}
+\caption{Verificación de las propiedades de la cadena de Metropolis
+(instancias aleatorias, semilla 0, \(T=100\)).}
+\label{tab:verificacion}
+\end{table}
+
+\subsection{Experimento 1: la distribución de Boltzmann según la temperatura}
+\label{subsec:res_temperatura}
+
+En la instancia aleatoria de cinco ciudades, los costos de las \(12\)
+rutas van de \(f^\ast=2703\) a \(3647\), con un rango de \(944\). La
+figura~\ref{fig:exp1} muestra \(\pi_T\) para tres temperaturas
+expresadas como múltiplos de ese rango.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{exp1_boltzmann_temperatura.pdf}
+\caption{Distribución de Boltzmann \(\pi_T\) sobre las \(12\) rutas
+(\(n=5\)), ordenadas de menor a mayor costo, para tres temperaturas. La
+línea punteada es la distribución uniforme.}
+\label{fig:exp1}
+\end{figure}
+
+Con \(T=2\) veces el rango, \(\pi_T\) está cerca de la uniforme
+(\(1/12\approx0.083\)). Al bajar la temperatura, la masa se desplaza
+hacia las rutas baratas: con \(T=0.1\) veces el rango, las dos rutas
+más baratas acumulan más del \(60\,\%\) y las seis más caras tienen
+probabilidad casi nula, como predice la
+proposición~\ref{prop:temperatura}(a)--(b). Las dos primeras rutas
+tienen costos muy parecidos (\(2703\) y \(2711\)), así que a estas
+temperaturas reciben casi la misma probabilidad; solo a temperaturas
+mucho menores se separan. También se comprobó en una malla de \(60\)
+temperaturas que \(\E_{\pi_T}[f]\) es no decreciente en \(T\), como
+afirma \eqref{eq:derivada}.
+
+\subsection{Experimento 2: frecuencias empíricas y teorema ergódico}
+\label{subsec:res_ergodico}
+
+A temperatura fija \(T=0.5\times944=472\) se simuló una trayectoria de
+\(200\,000\) pasos con el mismo núcleo del
+algoritmo~\ref{alg:recocido}. La estacionaria calculada numéricamente
+coincide con la de Boltzmann con un error máximo de
+\(1.4\times10^{-16}\).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{exp2_frecuencias_convergencia.pdf}
+\caption{Izquierda: \(\pi_T\) exacta y frecuencias empíricas de una
+trayectoria de \(200\,000\) pasos (\(n=5\), \(T=472\)). Derecha:
+distancia de variación total entre las frecuencias de los primeros
+\(t\) pasos y \(\pi_T\), con una recta de pendiente \(-1/2\) como
+referencia.}
+\label{fig:exp2}
+\end{figure}
+
+La figura~\ref{fig:exp2} muestra que las frecuencias de visita
+reproducen \(\pi_T\) en todas las rutas, con una diferencia máxima de
+\(0.0033\) en probabilidad. La distancia de variación total cae de
+\(0.25\) con \(100\) pasos a \(0.0073\) con \(200\,000\), como predice
+el teorema ergódico (teorema~\ref{teo:ergodico}). En escala
+log-log, la caída sigue aproximadamente una recta de pendiente
+\(-1/2\). Esa velocidad es la que se espera de las fluctuaciones
+estadísticas de un promedio temporal: el sesgo inicial se olvida en
+pocos tiempos de relajación (aquí, unos \(4\) pasos), y lo que queda es
+un error del orden de \(t^{-1/2}\).
+
+\subsection{Experimento 3: brecha espectral y profundidad crítica}
+\label{subsec:res_brecha}
+
+La instancia de la semilla 0 tiene dos mínimos locales: la ruta óptima,
+de costo \(2703\), y una de costo \(2711\). La profundidad crítica
+calculada de forma exacta es \(h^\ast=66\): para escapar de la segunda
+ruta hacia la óptima, la cadena debe pasar por una ruta \(66\) unidades
+más cara. Como contraste se usó la primera instancia con un único
+mínimo local, que resultó ser la de la semilla 1; para ella
+\(h^\ast=0\). La tabla~\ref{tab:brecha} y la figura~\ref{fig:exp3}
+resumen los resultados.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}rrrrr@{}}
+\toprule
+\(T/\text{rango}\) & \(T\) & \(\gamma(T)\) & \(t_{\mathrm{rel}}=1/\gamma\) & \(\pi_T(\Sopt)\) \\
+\midrule
+5     & 4720 & \(0.371\) & \(2.7\) & 0.092 \\
+1     &  944 & \(0.290\) & \(3.4\) & 0.127 \\
+0.1   & 94.4 & \(0.116\) & \(8.6\) & 0.325 \\
+0.05  & 47.2 & \(4.95\times10^{-2}\) & \(20\) & 0.435 \\
+0.02  & 18.9 & \(4.93\times10^{-3}\) & \(203\) & 0.590 \\
+0.01  & 9.44 & \(1.25\times10^{-4}\) & \(8.0\times10^{3}\) & 0.700 \\
+0.005 & 4.72 & \(9.05\times10^{-8}\) & \(1.1\times10^{7}\) & 0.845 \\
+\bottomrule
+\end{tabular}
+\caption{Brecha espectral, tiempo de relajación y masa en el óptimo
+para la instancia de la semilla 0 (\(n=5\), \(h^\ast=66\)). En todas
+las temperaturas, \(\pi\) numérica y Boltzmann difieren en menos de
+\(10^{-10}\).}
+\label{tab:brecha}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{exp3_brecha_espectral.pdf}
+\caption{Izquierda: brecha espectral frente a la temperatura relativa
+para las dos instancias. Derecha: \(-\ln\gamma(T)\) frente a \(1/T\); la
+recta punteada tiene la pendiente \(h^\ast=66\) predicha por el
+teorema~\ref{teo:brecha_baja}.}
+\label{fig:exp3}
+\end{figure}
+
+\paragraph{Instancia con un mínimo espurio.} A temperatura alta la
+brecha es del orden de \(0.3\) y la cadena se mezcla en pocos pasos. Al
+bajar la temperatura, la brecha cae exponencialmente: entre
+\(T=9.44\) y \(T=4.72\) pasa de \(1.2\times10^{-4}\) a
+\(9\times10^{-8}\). La pendiente de \(-\ln\gamma\) frente a \(1/T\)
+entre las dos temperaturas más bajas es \(68.2\), a un \(3\,\%\) de la
+profundidad crítica exacta \(h^\ast=66\). Esta concordancia es la
+verificación cuantitativa del teorema~\ref{teo:brecha_baja}. La
+diferencia residual se explica porque el teorema describe solo el
+término dominante \(e^{-h^\ast/T}\), y a temperatura finita el factor
+subexponencial \(e^{o(1/T)}\) todavía pesa.
+
+\paragraph{Instancia sin mínimos espurios.} Cuando \(h^\ast=0\), la
+brecha no se anula: se estabiliza en \(0.1\), que coincide con
+\(1/\binom52\), la probabilidad de proponer un movimiento particular.
+Sin pozos de los cuales escapar, enfriar no vuelve lenta la cadena.
+
+\paragraph{El dilema del recocido.} La tabla~\ref{tab:brecha} muestra
+las dos caras del problema. Bajar la temperatura de \(0.01\) a
+\(0.005\) veces el rango eleva \(\pi_T(\Sopt)\) de \(0.70\) a
+\(0.84\), pero multiplica el tiempo de relajación por más de \(1000\),
+hasta \(1.1\times10^7\) pasos. Por eso no basta con simular a una
+temperatura baja fija, y se justifica el enfriamiento gradual.
+
+\subsection{Experimento 4: recocido simulado en instancias de TSPLIB}
+\label{subsec:res_tsplib}
+
+La tabla~\ref{tab:tsplib} muestra que el recocido sobre rutas encontró
+el óptimo publicado en las \(40\) corridas, incluida \texttt{berlin52},
+cuyo espacio de estados tiene unas \(7.8\times10^{65}\) rutas. El tiempo
+medio por corrida en Colab fue de \(1.5\) segundos para
+\texttt{berlin52} y de menos de \(0.25\) segundos para las demás.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Instancia & \(n\) & óptimo & pasos por corrida & veces en el óptimo & brecha media (\%) \\
+\midrule
+\texttt{burma14}   & 14 & 3323 & 122\,850   & 10/10 & 0.00 \\
+\texttt{ulysses16} & 16 & 6859 & 162\,000   & 10/10 & 0.00 \\
+\texttt{ulysses22} & 22 & 7013 & 311\,850   & 10/10 & 0.00 \\
+\texttt{berlin52}  & 52 & 7542 & 1\,790\,100 & 10/10 & 0.00 \\
+\bottomrule
+\end{tabular}
+\caption{Recocido simulado sobre rutas en TSPLIB, con 10 semillas por
+instancia.}
+\label{tab:tsplib}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{exp4_berlin52.pdf}
+\caption{Una corrida del recocido en \texttt{berlin52} (semilla 0).
+Izquierda: costo de la ruta actual y mejor costo al final de cada nivel
+de temperatura, en escala logarítmica. Derecha: fracción de propuestas
+no nulas aceptadas en cada nivel.}
+\label{fig:exp4}
+\end{figure}
+
+La figura~\ref{fig:exp4} muestra las tres fases típicas del recocido.
+En los primeros \(20\) niveles se acepta cerca del \(90\,\%\) de las
+propuestas y el costo fluctúa alrededor de \(2.5\times10^4\), más del
+triple del óptimo: la cadena explora casi uniformemente, como
+\(\pi_T\) a temperatura alta. Entre los niveles \(20\) y \(80\), la
+aceptación cae y el costo desciende de forma sostenida. Hacia el nivel
+\(90\), la aceptación es casi nula y la ruta queda fija en el óptimo:
+la cadena está congelada en un mínimo, que en este caso es el global.
+
+\paragraph{Garantía teórica frente a la práctica.} El esquema es
+geométrico, así que el corolario~\ref{cor:enfriamiento} no garantiza
+convergencia. De hecho, en la instancia de cinco ciudades del
+experimento~5 una de las \(10\) corridas sobre rutas terminó en la ruta
+de costo \(2711\), el mínimo espurio de profundidad \(66\), con una
+brecha de \(0.3\,\%\). En las instancias de TSPLIB no se observó este
+fenómeno. Una explicación plausible es que el número de pasos por
+temperatura, \(10\binom n2\), da tiempo suficiente para escapar de los
+pozos de estas instancias antes de que la temperatura sea demasiado
+baja.
+
+\subsection{Experimento 5: recocido sobre el QUBO y sensibilidad a \texorpdfstring{\(M\)}{M}}
+\label{subsec:res_qubo}
+
+La tabla~\ref{tab:qubo} y la figura~\ref{fig:exp5} resumen el
+experimento. Para la instancia de cinco ciudades, el umbral exacto
+calculado por enumeración de las \(2^{16}\) asignaciones es
+\(M^\ast=878\approx0.74\max c\), bastante menor que la cota suficiente
+\(M=U+1=2779\) de la proposición~\ref{prop:equivalencia}.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+& \multicolumn{2}{c}{aleatoria \(n=5\)} & \multicolumn{2}{c}{aleatoria \(n=8\)} & \multicolumn{2}{c}{\texttt{burma14}} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(l){6-7}
+\(M\) & termina en ruta & brecha & termina en ruta & brecha & termina en ruta & brecha \\
+\midrule
+\(0.25\max c\) &   0\,\% & 0.03 &   0\,\% & 30.96 &   0\,\% & — \\
+\(0.5\max c\)  &   0\,\% & 0.00 &   0\,\% &  4.29 &  20\,\% & 29.08 \\
+\(1\max c\)    & 100\,\% & 0.00 & 100\,\% &  2.63 & 100\,\% & 40.16 \\
+\(2\max c\)    & 100\,\% & 0.00 & 100\,\% &  7.78 & 100\,\% & 57.17 \\
+\(4\max c\)    & 100\,\% & 0.00 & 100\,\% & 13.23 & 100\,\% & 55.22 \\
+\(U+1\)        & 100\,\% & 0.00 & 100\,\% &  7.31 & 100\,\% & 58.98 \\
+\midrule
+rutas (2-opt)  & 100\,\% & 0.03 & 100\,\% &  0.00 & 100\,\% &  0.00 \\
+\bottomrule
+\end{tabular}
+\caption{Recocido sobre el QUBO con distintos valores de \(M\) (10
+semillas). \emph{Termina en ruta}: porcentaje de corridas cuyo estado
+de menor energía es factible. \emph{Brecha}: brecha media (\%) de la
+mejor ruta visitada. Con \(M=1.1M^\ast\) (\(n=5\)), las 10 corridas
+terminan en la ruta óptima. En \texttt{burma14} con \(M=0.25\max c\)
+ninguna corrida visitó una ruta.}
+\label{tab:qubo}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{exp5_qubo_sensibilidad_m.pdf}
+\caption{Recocido sobre el QUBO en función de \(M/\max c\). Izquierda:
+brecha media de la mejor ruta visitada. Derecha: porcentaje de corridas
+cuyo estado de menor energía es una ruta.}
+\label{fig:exp5}
+\end{figure}
+
+\paragraph{\(M\) pequeño: el mínimo es infactible.} Con
+\(M\le0.5\max c\), que es menor que \(M^\ast\) en la instancia de
+cinco ciudades, ninguna corrida en las instancias aleatorias termina en
+una ruta: el estado de menor energía visitado es infactible, como
+anticipa la discusión posterior a la
+proposición~\ref{prop:equivalencia}. La cadena sí pasa por rutas, y
+con \(n=5\) la mejor ruta visitada es casi siempre la óptima, pero esa
+información solo se recupera si se registra explícitamente.
+
+\paragraph{\(M\) grande: la barrera.} En cuanto \(M\) supera el umbral,
+todas las corridas terminan en una ruta, pero la calidad empeora al
+seguir aumentando \(M\). Con \(n=8\), la brecha media pasa de
+\(2.6\,\%\) con \(M=\max c\) a \(13.2\,\%\) con \(M=4\max c\). En
+\texttt{burma14}, el QUBO nunca encontró el óptimo, y sus brechas
+estuvieron entre el \(29\) y el \(59\,\%\). Este comportamiento en
+forma de U es el que predice la proposición~\ref{prop:barrera}: toda
+ruta no óptima es un pozo de profundidad al menos \(2M-2\cmax\), así
+que con \(M=4\max c\) la cadena debe superar barreras de al menos
+\(6\max c\), y por el teorema~\ref{teo:brecha_baja} queda atrapada en
+la primera ruta que encuentra al enfriarse.
+
+\paragraph{La representación importa.} La comparación con la última
+fila de la tabla~\ref{tab:qubo} es directa. Con el mismo esquema de
+enfriamiento y menos pasos, el recocido sobre rutas encuentra el óptimo
+de \texttt{burma14} en las \(10\) corridas, mientras que sobre el QUBO
+la mejor configuración queda a un \(29\,\%\). El problema es el mismo; lo
+que cambia es el espacio de estados de la cadena. La vecindad 2-opt
+nunca abandona el conjunto de rutas, y sus barreras son solo las del
+costo. El volteo de un bit, en cambio, obliga a cruzar estados
+infactibles cuya penalización crece con \(M\). Este resultado no
+descalifica el modelo QUBO, que es la entrada natural de los
+recocedores cuánticos, sino la combinación del QUBO con la vecindad
+más simple: un movimiento que intercambie dos ciudades de posición
+preservaría la factibilidad y evitaría la barrera.
