@@ -1,0 +1,23 @@
+instancia,metodo,M,valor_M,M_sobre_max_d,final_es_ruta_pct,visito_ruta_pct,brecha_media,veces_optimo,pasos
+aleatoria_n5_s0,QUBO,0.25·max d,295.8,0.25,0.0,100.0,0.03,9,21600
+aleatoria_n5_s0,QUBO,0.5·max d,591.5,0.5,0.0,100.0,0.0,10,21600
+aleatoria_n5_s0,QUBO,1·max d,1183.0,1.0,100.0,100.0,0.0,10,21600
+aleatoria_n5_s0,QUBO,2·max d,2366.0,2.0,100.0,100.0,0.0,10,21600
+aleatoria_n5_s0,QUBO,4·max d,4732.0,4.0,100.0,100.0,0.0,10,21600
+aleatoria_n5_s0,QUBO,seguro (U+1),2779.0,2.35,100.0,100.0,0.0,10,21600
+aleatoria_n5_s0,QUBO,1.1·M*,965.8,0.82,100.0,100.0,0.0,10,21600
+aleatoria_n5_s0,rutas (2-opt),—,,,100.0,100.0,0.03,9,13500
+aleatoria_n8_s0,QUBO,0.25·max d,295.8,0.25,0.0,40.0,30.96,0,66150
+aleatoria_n8_s0,QUBO,0.5·max d,591.5,0.5,0.0,100.0,4.29,0,66150
+aleatoria_n8_s0,QUBO,1·max d,1183.0,1.0,100.0,100.0,2.63,3,66150
+aleatoria_n8_s0,QUBO,2·max d,2366.0,2.0,100.0,100.0,7.78,0,66150
+aleatoria_n8_s0,QUBO,4·max d,4732.0,4.0,100.0,100.0,13.23,0,66150
+aleatoria_n8_s0,QUBO,seguro (U+1),3449.0,2.92,100.0,100.0,7.31,0,66150
+aleatoria_n8_s0,rutas (2-opt),—,,,100.0,100.0,0.0,10,37800
+burma14,QUBO,0.25·max d,315.2,0.25,0.0,0.0,,0,228150
+burma14,QUBO,0.5·max d,630.5,0.5,20.0,100.0,29.08,0,228150
+burma14,QUBO,1·max d,1261.0,1.0,100.0,100.0,40.16,0,228150
+burma14,QUBO,2·max d,2522.0,2.0,100.0,100.0,57.17,0,228150
+burma14,QUBO,4·max d,5044.0,4.0,100.0,100.0,55.22,0,228150
+burma14,QUBO,seguro (U+1),4049.0,3.21,100.0,100.0,58.98,0,228150
+burma14,rutas (2-opt),—,,,100.0,100.0,0.0,10,122850
